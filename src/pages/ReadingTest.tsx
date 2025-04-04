@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Home, Play, Pause, RotateCcw } from 'lucide-react';
+import { Home, Play, Pause, RotateCcw, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { readingPassages } from '@/services/wordService';
@@ -64,14 +64,15 @@ const ReadingTest = () => {
     startTimeRef.current = null;
   };
   
-  const finishReading = (wordCount: number) => {
+  const finishReading = () => {
     pauseReading();
-    setWordsRead(wordCount);
+    // Set words read to total words in the passage
+    setWordsRead(totalWords);
     
     // Calculate words per minute
     if (elapsedTime > 0) {
       const minutes = elapsedTime / 60;
-      const calculatedWpm = Math.round(wordCount / minutes);
+      const calculatedWpm = Math.round(totalWords / minutes);
       setWpm(calculatedWpm);
     }
     
@@ -155,22 +156,13 @@ const ReadingTest = () => {
               <CardContent>
                 <p className="text-xl leading-relaxed">{passage.text}</p>
                 
-                <div className="mt-8 space-y-4">
-                  <p className="text-lg">Click when you've finished reading:</p>
-                  <div className="grid grid-cols-3 gap-4">
-                    {[0.25, 0.5, 1].map((fraction) => {
-                      const wordCount = Math.floor(totalWords * fraction);
-                      return (
-                        <Button
-                          key={fraction}
-                          onClick={() => finishReading(wordCount)}
-                          className="bg-kid-green hover:bg-kid-green/80 text-lg py-6"
-                        >
-                          {wordCount} words
-                        </Button>
-                      );
-                    })}
-                  </div>
+                <div className="mt-8">
+                  <Button
+                    onClick={finishReading}
+                    className="bg-kid-green hover:bg-kid-green/80 w-full text-xl py-6 animate-pulse"
+                  >
+                    <CheckCircle className="mr-2" /> I Finished Reading!
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -200,9 +192,9 @@ const ReadingTest = () => {
               
               <div className="pt-4">
                 <p className="text-lg mb-2">Progress:</p>
-                <Progress value={(wordsRead / totalWords) * 100} className="h-4" />
+                <Progress value={100} className="h-4" />
                 <p className="text-right mt-1 text-gray-600">
-                  {wordsRead} of {totalWords} words ({Math.round((wordsRead / totalWords) * 100)}%)
+                  {totalWords} of {totalWords} words (100%)
                 </p>
               </div>
               
