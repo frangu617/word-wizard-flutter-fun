@@ -1,7 +1,8 @@
 
 import React from 'react';
 import KidNavButton from '@/components/KidNavButton';
-import { Book, Search, Flashcard, Clock, BookOpen } from 'lucide-react';
+import { Book, Search, Clock, BookOpen } from 'lucide-react';
+import { Flashcard } from '@/components/lucide-icons';
 import { getRandomWords } from '@/services/wordService';
 import WordCard from '@/components/WordCard';
 
