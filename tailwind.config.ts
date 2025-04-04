@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,16 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Kids App Colors
+				kid: {
+					'red': '#FF5C5C',
+					'blue': '#5C9DFF',
+					'yellow': '#FFDE5C',
+					'green': '#5CFF8F',
+					'purple': '#C45CFF',
+					'pink': '#FF5CD0',
+					'orange': '#FFA05C',
 				}
 			},
 			borderRadius: {
@@ -84,11 +95,25 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'bounce-slow': {
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-10px)' }
+				},
+				'pop': {
+					'0%': { transform: 'scale(0.95)', opacity: '0.5' },
+					'70%': { transform: 'scale(1.05)' },
+					'100%': { transform: 'scale(1)', opacity: '1' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'bounce-slow': 'bounce-slow 2s ease-in-out infinite',
+				'pop': 'pop 0.3s ease-out'
+			},
+			fontFamily: {
+				'kid': ['Comic Sans MS', 'Comic Sans', 'cursive']
 			}
 		}
 	},
