@@ -1,4 +1,3 @@
-
 // This service handles text-to-speech functionality
 
 class AudioService {
@@ -6,11 +5,23 @@ class AudioService {
   private slowRate: number = 0.75; // Slightly faster but still child-friendly
   private normalRate: number = 1.0;
   private preferredVoice: SpeechSynthesisVoice | null = null;
+  private audioContext: AudioContext | null = null;
+  private sounds: { [key: string]: AudioBuffer } = {};
 
   constructor() {
     this.synth = window.speechSynthesis;
     // Initialize voice when the service is created
     this.initializeVoice();
+    
+    // Initialize audio context for sound effects
+    if (typeof window !== 'undefined') {
+      try {
+        this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        this.loadSounds();
+      } catch (e) {
+        console.error('Web Audio API is not supported in this browser', e);
+      }
+    }
   }
 
   private initializeVoice(): void {
@@ -107,6 +118,60 @@ class AudioService {
   // Get available voices for debugging
   public getAvailableVoices(): SpeechSynthesisVoice[] {
     return this.synth ? this.synth.getVoices() : [];
+  }
+  
+  // Load sound effects
+  private loadSounds(): void {
+    if (!this.audioContext) return;
+    
+    // Define sound effects to load
+    const soundsToLoad = {
+      'success': '/sounds/success.mp3',
+      'error': '/sounds/error.mp3'
+    };
+    
+    // Create simple beep sounds since we don't have actual files
+    this.generateBeepSounds();
+  }
+  
+  // Generate simple beep sounds for success and error
+  private generateBeepSounds(): void {
+    if (!this.audioContext) return;
+    
+    // Create a success sound (higher pitch beep)
+    const successBuffer = this.audioContext.createBuffer(1, this.audioContext.sampleRate * 0.3, this.audioContext.sampleRate);
+    const successChannel = successBuffer.getChannelData(0);
+    for (let i = 0; i < successBuffer.length; i++) {
+      // Higher pitch tone that rises
+      successChannel[i] = Math.sin(i * 0.04) * Math.exp(-i * 2 / successBuffer.length);
+    }
+    this.sounds['success'] = successBuffer;
+    
+    // Create an error sound (lower pitch beep)
+    const errorBuffer = this.audioContext.createBuffer(1, this.audioContext.sampleRate * 0.3, this.audioContext.sampleRate);
+    const errorChannel = errorBuffer.getChannelData(0);
+    for (let i = 0; i < errorBuffer.length; i++) {
+      // Lower pitch tone that falls
+      errorChannel[i] = Math.sin(i * 0.02) * Math.exp(-i * 3 / errorBuffer.length);
+    }
+    this.sounds['error'] = errorBuffer;
+  }
+  
+  // Play a sound effect
+  public playSound(name: string): void {
+    if (!this.audioContext || !this.sounds[name]) {
+      console.warn(`Sound "${name}" not available`);
+      return;
+    }
+    
+    try {
+      const source = this.audioContext.createBufferSource();
+      source.buffer = this.sounds[name];
+      source.connect(this.audioContext.destination);
+      source.start();
+    } catch (e) {
+      console.error('Error playing sound:', e);
+    }
   }
 }
 
