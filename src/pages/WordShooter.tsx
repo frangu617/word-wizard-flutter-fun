@@ -153,6 +153,7 @@ const WordShooter = () => {
                 className="relative bg-gradient-to-b from-blue-50 to-blue-100 h-[500px]"
               >
                 {words.map((word, index) => (
+                  
                   <button
                     key={`${word.word}-${index}-${word.position.x}-${word.position.y}`}
                     className={`
@@ -163,9 +164,13 @@ const WordShooter = () => {
                     style={{
                       left: `${word.position.x}px`,
                       top: `${word.position.y}px`,
-                      transform: 'translate(-50%, -50%)'
+                      transform: 'translate(-50%, -50%)',
+                      zIndex: word.correct ? 1 : 0
                     }}
-                    onClick={() => shootWord(word)}
+                    onClick={event => {
+                      event.preventDefault();
+                      shootWord(word)
+                    }}
                   >
                     {word.word}
                   </button>
