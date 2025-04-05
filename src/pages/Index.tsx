@@ -1,7 +1,7 @@
 
 import React from 'react';
 import KidNavButton from '@/components/KidNavButton';
-import { Book, Search, Clock, BookOpen } from 'lucide-react';
+import { Book, Search, Clock, BookOpen, Hash, Target } from 'lucide-react';
 import { Flashcard } from '@/components/lucide-icons';
 import { getRandomWords } from '@/services/wordService';
 import WordCard from '@/components/WordCard';
@@ -82,6 +82,22 @@ const Index = () => {
           icon={<BookOpen />}
         >
           Syllables
+        </KidNavButton>
+        
+        <KidNavButton
+          to="/crossword"
+          color="kid-yellow"
+          icon={<Hash />}
+        >
+          Crossword
+        </KidNavButton>
+        
+        <KidNavButton
+          to="/word-shooter"
+          color="kid-teal"
+          icon={<Target />}
+        >
+          Word Shooter
         </KidNavButton>
       </div>
     </div>
