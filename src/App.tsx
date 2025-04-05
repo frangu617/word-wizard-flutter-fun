@@ -11,6 +11,8 @@ import Dictionary from "./pages/Dictionary";
 import WordSearch from "./pages/WordSearch";
 import ReadingTest from "./pages/ReadingTest";
 import Syllables from "./pages/Syllables";
+import CrosswordPuzzle from "./pages/CrosswordPuzzle";
+import WordShooter from "./pages/WordShooter";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +29,8 @@ const App = () => (
           <Route path="/word-search" element={<WordSearch />} />
           <Route path="/reading-test" element={<ReadingTest />} />
           <Route path="/syllables" element={<Syllables />} />
+          <Route path="/crossword" element={<CrosswordPuzzle />} />
+          <Route path="/word-shooter" element={<WordShooter />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

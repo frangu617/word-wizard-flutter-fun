@@ -1,32 +1,50 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Home, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { wordSearchCategories, generateWordSearch } from '@/services/wordService';
 import audioService from '@/services/audioService';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import WordEntryForm from '@/components/WordEntryForm';
 
 const WordSearch = () => {
-  const [category, setCategory] = useState<keyof typeof wordSearchCategories>('animals');
+  const [category, setCategory] = useState<keyof typeof wordSearchCategories | 'custom'>('animals');
+  const [customWords, setCustomWords] = useState<string[]>([]);
   const [wordSearch, setWordSearch] = useState<{
     grid: string[][];
     placedWords: Array<{word: string; row: number; col: number; direction: string}>;
   } | null>(null);
   const [foundWords, setFoundWords] = useState<Set<string>>(new Set());
   const [selectedCells, setSelectedCells] = useState<Array<[number, number]>>([]);
+  const [showCustomDialog, setShowCustomDialog] = useState(false);
   
-  // Generate a new word search puzzle when category changes
+  // Generate a new word search puzzle when category or custom words change
   useEffect(() => {
     generateNewPuzzle();
-  }, [category]);
+  }, [category, customWords]);
   
   const generateNewPuzzle = () => {
-    const words = wordSearchCategories[category].slice(0, 6); // Limit to 6 words for simplicity
+    let words: string[];
+    
+    if (category === 'custom') {
+      words = customWords.length > 0 ? customWords : wordSearchCategories.animals.slice(0, 6);
+    } else {
+      words = wordSearchCategories[category].slice(0, 6);
+    }
+    
     const puzzle = generateWordSearch(words, 8); // 8x8 grid
     setWordSearch(puzzle);
     setFoundWords(new Set());
     setSelectedCells([]);
+  };
+  
+  const handleAddCustomWords = (words: string[]) => {
+    setCustomWords(words);
+    setCategory('custom');
+    setShowCustomDialog(false);
   };
   
   const handleCellClick = (row: number, col: number) => {
@@ -151,22 +169,41 @@ const WordSearch = () => {
       
       <div className="max-w-xl mx-auto mb-6">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
-          <Select
-            value={category}
-            onValueChange={(value) => setCategory(value as keyof typeof wordSearchCategories)}
-          >
-            <SelectTrigger className="w-full md:w-[180px] text-lg">
-              <SelectValue placeholder="Select category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="animals">Animals</SelectItem>
-              <SelectItem value="colors">Colors</SelectItem>
-              <SelectItem value="food">Food</SelectItem>
-              <SelectItem value="body">Body Parts</SelectItem>
-              <SelectItem value="clothes">Clothes</SelectItem>
-              <SelectItem value="school">School</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex gap-2 w-full md:w-auto">
+            <Select
+              value={category}
+              onValueChange={(value) => setCategory(value as keyof typeof wordSearchCategories | 'custom')}
+            >
+              <SelectTrigger className="w-[180px] text-lg">
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="animals">Animals</SelectItem>
+                <SelectItem value="colors">Colors</SelectItem>
+                <SelectItem value="food">Food</SelectItem>
+                <SelectItem value="body">Body Parts</SelectItem>
+                <SelectItem value="clothes">Clothes</SelectItem>
+                <SelectItem value="school">School</SelectItem>
+                <SelectItem value="custom">My Words</SelectItem>
+              </SelectContent>
+            </Select>
+            
+            <Dialog open={showCustomDialog} onOpenChange={setShowCustomDialog}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="border-kid-green text-kid-green">
+                  Add My Words
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Add Your Own Words</DialogTitle>
+                </DialogHeader>
+                <div className="py-4">
+                  <WordEntryForm onAddWords={handleAddCustomWords} maxWords={8} />
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
           
           <div className="text-xl">
             Found: {foundWords.size}/{wordSearch?.placedWords.length || 0}

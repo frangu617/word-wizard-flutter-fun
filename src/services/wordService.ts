@@ -1,4 +1,3 @@
-
 import { toast } from "@/components/ui/use-toast";
 
 // Sight words frequently used in early reading
@@ -284,4 +283,343 @@ export const getPhonicsRules = (word: string): string[] => {
   }
   
   return rules;
+};
+
+// Function to generate a crossword puzzle
+export const generateCrossword = (
+  words: string[], 
+  clues: {[key: string]: string}
+) => {
+  // Sort words by length (longest first)
+  const sortedWords = [...words].sort((a, b) => b.length - a.length);
+  
+  // Initialize an empty grid (15x15)
+  const size = 15;
+  const grid: string[][] = Array(size).fill('').map(() => Array(size).fill(' '));
+  const placedWords: Array<{word: string; row: number; col: number; direction: string; clue: string}> = [];
+  
+  // Try to place each word
+  for (const word of sortedWords) {
+    let placed = false;
+    
+    // First try to place horizontally
+    if (!placed) {
+      placed = tryPlaceHorizontal(word, grid, placedWords, clues);
+    }
+    
+    // Then try vertically
+    if (!placed) {
+      placed = tryPlaceVertical(word, grid, placedWords, clues);
+    }
+    
+    // If still not placed, try to place it without intersections
+    if (!placed) {
+      // Try center row
+      const centerRow = Math.floor(size / 2);
+      for (let col = 0; col <= size - word.length; col++) {
+        let canPlace = true;
+        for (let i = 0; i < word.length; i++) {
+          if (grid[centerRow][col + i] !== ' ') {
+            canPlace = false;
+            break;
+          }
+        }
+        
+        if (canPlace) {
+          for (let i = 0; i < word.length; i++) {
+            grid[centerRow][col + i] = word[i].toUpperCase();
+          }
+          
+          placedWords.push({
+            word,
+            row: centerRow,
+            col,
+            direction: 'horizontal',
+            clue: clues[word] || `Clue for ${word}`
+          });
+          
+          placed = true;
+          break;
+        }
+      }
+    }
+    
+    if (!placed) {
+      // Try center column
+      const centerCol = Math.floor(size / 2);
+      for (let row = 0; row <= size - word.length; row++) {
+        let canPlace = true;
+        for (let i = 0; i < word.length; i++) {
+          if (grid[row + i][centerCol] !== ' ') {
+            canPlace = false;
+            break;
+          }
+        }
+        
+        if (canPlace) {
+          for (let i = 0; i < word.length; i++) {
+            grid[row + i][centerCol] = word[i].toUpperCase();
+          }
+          
+          placedWords.push({
+            word,
+            row,
+            col: centerCol,
+            direction: 'vertical',
+            clue: clues[word] || `Clue for ${word}`
+          });
+          
+          placed = true;
+          break;
+        }
+      }
+    }
+  }
+  
+  return { grid, words: placedWords };
+};
+
+// Helper function to try placing a word horizontally
+const tryPlaceHorizontal = (
+  word: string, 
+  grid: string[][], 
+  placedWords: Array<{word: string; row: number; col: number; direction: string; clue: string}>,
+  clues: {[key: string]: string}
+) => {
+  const size = grid.length;
+  
+  // First try to find intersections with existing words
+  for (let row = 0; row < size; row++) {
+    for (let col = 0; col < size; col++) {
+      // Try to place the word starting at this position
+      if (col + word.length > size) continue;
+      
+      let intersection = false;
+      let canPlace = true;
+      
+      for (let i = 0; i < word.length; i++) {
+        const current = grid[row][col + i];
+        
+        // Check if there's an intersection
+        if (current !== ' ' && current !== word[i].toUpperCase()) {
+          canPlace = false;
+          break;
+        }
+        
+        if (current === word[i].toUpperCase()) {
+          intersection = true;
+        }
+        
+        // Check if there are words above or below that would block placement
+        if (current === ' ') {
+          // Check above
+          if (row > 0 && grid[row - 1][col + i] !== ' ') {
+            canPlace = false;
+            break;
+          }
+          
+          // Check below
+          if (row < size - 1 && grid[row + 1][col + i] !== ' ') {
+            canPlace = false;
+            break;
+          }
+        }
+        
+        // Check adjacent cells at the start and end of the word
+        if (i === 0 && col > 0 && grid[row][col - 1] !== ' ') {
+          canPlace = false;
+          break;
+        }
+        
+        if (i === word.length - 1 && col + i + 1 < size && grid[row][col + i + 1] !== ' ') {
+          canPlace = false;
+          break;
+        }
+      }
+      
+      // Only place the word if there's an intersection with an existing word
+      // or if it's the first word
+      if (canPlace && (intersection || placedWords.length === 0)) {
+        for (let i = 0; i < word.length; i++) {
+          grid[row][col + i] = word[i].toUpperCase();
+        }
+        
+        placedWords.push({
+          word,
+          row,
+          col,
+          direction: 'horizontal',
+          clue: clues[word] || `Clue for ${word}`
+        });
+        
+        return true;
+      }
+    }
+  }
+  
+  return false;
+};
+
+// Helper function to try placing a word vertically
+const tryPlaceVertical = (
+  word: string, 
+  grid: string[][], 
+  placedWords: Array<{word: string; row: number; col: number; direction: string; clue: string}>,
+  clues: {[key: string]: string}
+) => {
+  const size = grid.length;
+  
+  // First try to find intersections with existing words
+  for (let row = 0; row < size; row++) {
+    for (let col = 0; col < size; col++) {
+      // Try to place the word starting at this position
+      if (row + word.length > size) continue;
+      
+      let intersection = false;
+      let canPlace = true;
+      
+      for (let i = 0; i < word.length; i++) {
+        const current = grid[row + i][col];
+        
+        // Check if there's an intersection
+        if (current !== ' ' && current !== word[i].toUpperCase()) {
+          canPlace = false;
+          break;
+        }
+        
+        if (current === word[i].toUpperCase()) {
+          intersection = true;
+        }
+        
+        // Check if there are words to the left or right that would block placement
+        if (current === ' ') {
+          // Check left
+          if (col > 0 && grid[row + i][col - 1] !== ' ') {
+            canPlace = false;
+            break;
+          }
+          
+          // Check right
+          if (col < size - 1 && grid[row + i][col + 1] !== ' ') {
+            canPlace = false;
+            break;
+          }
+        }
+        
+        // Check adjacent cells at the start and end of the word
+        if (i === 0 && row > 0 && grid[row - 1][col] !== ' ') {
+          canPlace = false;
+          break;
+        }
+        
+        if (i === word.length - 1 && row + i + 1 < size && grid[row + i + 1][col] !== ' ') {
+          canPlace = false;
+          break;
+        }
+      }
+      
+      // Only place the word if there's an intersection with an existing word
+      // or if it's the first word
+      if (canPlace && (intersection || placedWords.length === 0)) {
+        for (let i = 0; i < word.length; i++) {
+          grid[row + i][col] = word[i].toUpperCase();
+        }
+        
+        placedWords.push({
+          word,
+          row,
+          col,
+          direction: 'vertical',
+          clue: clues[word] || `Clue for ${word}`
+        });
+        
+        return true;
+      }
+    }
+  }
+  
+  return false;
+};
+
+// Function to generate misspelled variants of words for the shooting game
+export const generateMisspelledWords = (level: number) => {
+  // Get a random word from our word categories
+  const categories = Object.keys(wordSearchCategories) as Array<keyof typeof wordSearchCategories>;
+  const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+  const words = wordSearchCategories[randomCategory];
+  
+  const word = words[Math.floor(Math.random() * words.length)];
+  
+  // Create a misspelled version
+  const misspelled = createMisspelling(word, level);
+  
+  // Randomly decide which is correct (the original or the misspelled)
+  const result = [
+    { word, correct: true },
+    { word: misspelled, correct: false }
+  ];
+  
+  return result;
+};
+
+// Function to create a misspelled version of a word
+const createMisspelling = (word: string, level: number) => {
+  // Higher level = more sophisticated misspellings
+  const letters = word.split('');
+  
+  // Common misspelling types
+  const misspellingTypes = [
+    // Swap two adjacent letters
+    () => {
+      if (word.length < 2) return word;
+      const i = Math.floor(Math.random() * (word.length - 1));
+      letters[i] = word[i + 1];
+      letters[i + 1] = word[i];
+      return letters.join('');
+    },
+    
+    // Double a letter
+    () => {
+      if (word.length < 1) return word;
+      const i = Math.floor(Math.random() * word.length);
+      letters.splice(i, 0, word[i]);
+      return letters.join('');
+    },
+    
+    // Remove a letter
+    () => {
+      if (word.length < 2) return word;
+      const i = Math.floor(Math.random() * word.length);
+      letters.splice(i, 1);
+      return letters.join('');
+    },
+    
+    // Replace a vowel with another vowel
+    () => {
+      const vowels = ['a', 'e', 'i', 'o', 'u'];
+      const vowelPositions = letters.map((l, i) => vowels.includes(l) ? i : -1).filter(i => i !== -1);
+      
+      if (vowelPositions.length === 0) return word;
+      
+      const pos = vowelPositions[Math.floor(Math.random() * vowelPositions.length)];
+      const currentVowel = letters[pos];
+      const newVowel = vowels.filter(v => v !== currentVowel)[Math.floor(Math.random() * (vowels.length - 1))];
+      
+      letters[pos] = newVowel;
+      return letters.join('');
+    }
+  ];
+  
+  // Choose a random misspelling type
+  const misspellingType = misspellingTypes[Math.floor(Math.random() * misspellingTypes.length)];
+  
+  // Apply the misspelling
+  let misspelled = misspellingType();
+  
+  // Make sure it's actually different
+  while (misspelled === word) {
+    misspelled = misspellingTypes[Math.floor(Math.random() * misspellingTypes.length)]();
+  }
+  
+  return misspelled;
 };
