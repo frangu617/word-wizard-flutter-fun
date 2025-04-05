@@ -12,6 +12,7 @@ import WordSearch from "./pages/WordSearch";
 import ReadingTest from "./pages/ReadingTest";
 import Syllables from "./pages/Syllables";
 import WordShooter from "./pages/WordShooter";
+import WordShooterWarning from "./pages/WordShooterWarning";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/reading-test" element={<ReadingTest />} />
           <Route path="/syllables" element={<Syllables />} />
           <Route path="/word-shooter" element={<WordShooter />} />
+          <Route path="/word-shooter-warning" element={<WordShooterWarning />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

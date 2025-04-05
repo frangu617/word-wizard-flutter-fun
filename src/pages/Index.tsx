@@ -138,8 +138,8 @@ const Index = () => {
         </KidNavButton>
         
         <KidNavButton
-          to="/word-shooter"
-          color="kid-teal"
+          to="/word-shooter-warning"
+          color="kid-red"
           icon={<Target />}
         >
           Word Shooter
