@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Home, RefreshCw, Crosshair } from 'lucide-react';
+import { Home, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import audioService from '@/services/audioService';
@@ -14,7 +14,6 @@ const WordShooter = () => {
   const [gameActive, setGameActive] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
-  const [crosshairPosition, setCrosshairPosition] = useState({ x: 0, y: 0 });
   const gameAreaRef = useRef<HTMLDivElement>(null);
   
   // Start the game
@@ -81,30 +80,6 @@ const WordShooter = () => {
     }
   }, [score]);
   
-  // Track mouse movement for crosshair
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!gameAreaRef.current) return;
-      
-      const rect = gameAreaRef.current.getBoundingClientRect();
-      setCrosshairPosition({
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top
-      });
-    };
-    
-    const gameArea = gameAreaRef.current;
-    if (gameArea) {
-      gameArea.addEventListener('mousemove', handleMouseMove);
-    }
-    
-    return () => {
-      if (gameArea) {
-        gameArea.removeEventListener('mousemove', handleMouseMove);
-      }
-    };
-  }, []);
-  
   // Spawn new words
   const spawnWords = () => {
     if (!gameAreaRef.current) return;
@@ -140,6 +115,12 @@ const WordShooter = () => {
     setWords(prev => prev.filter(w => w !== word));
   };
   
+  // Handle word click
+  const handleWordClick = (e: React.MouseEvent, word: {word: string; correct: boolean; position: {x: number; y: number}}) => {
+    e.stopPropagation();
+    shootWord(word);
+  };
+  
   return (
     <div className="min-h-screen p-4 bg-gradient-to-b from-blue-100 to-blue-50">
       <header className="flex justify-between items-center mb-6">
@@ -155,7 +136,7 @@ const WordShooter = () => {
           <Card className="kid-bubble border-kid-green p-6">
             <CardContent className="pt-0 text-center">
               <h2 className="text-2xl font-bold mb-4">Word Shooter Game</h2>
-              <p className="mb-6">Shoot the correctly spelled words and avoid the misspelled ones!</p>
+              <p className="mb-6">Tap on the correctly spelled words and avoid the misspelled ones!</p>
               <Button 
                 onClick={startGame}
                 className="bg-kid-green hover:bg-kid-green/90 text-xl py-6 px-8"
@@ -175,60 +156,26 @@ const WordShooter = () => {
             <Card className="kid-bubble border-kid-green overflow-hidden">
               <div 
                 ref={gameAreaRef}
-                className="relative bg-gradient-to-b from-blue-50 to-blue-100 h-[500px] cursor-none"
-                onClick={() => {
-                  // Find if we clicked on any word
-                  const clickedWordIndex = words.findIndex(word => {
-                    const wordElement = document.getElementById(`word-${word.word}-${word.position.x}-${word.position.y}`);
-                    if (!wordElement) return false;
-                    
-                    const rect = wordElement.getBoundingClientRect();
-                    return (
-                      crosshairPosition.x >= rect.left - (gameAreaRef.current?.getBoundingClientRect().left || 0) &&
-                      crosshairPosition.x <= rect.right - (gameAreaRef.current?.getBoundingClientRect().left || 0) &&
-                      crosshairPosition.y >= rect.top - (gameAreaRef.current?.getBoundingClientRect().top || 0) &&
-                      crosshairPosition.y <= rect.bottom - (gameAreaRef.current?.getBoundingClientRect().top || 0)
-                    );
-                  });
-                  
-                  if (clickedWordIndex !== -1) {
-                    shootWord(words[clickedWordIndex]);
-                  }
-                }}
+                className="relative bg-gradient-to-b from-blue-50 to-blue-100 h-[500px]"
               >
                 {words.map((word, index) => (
                   <div
-                    id={`word-${word.word}-${word.position.x}-${word.position.y}`}
                     key={`${word.word}-${index}-${word.position.x}-${word.position.y}`}
                     className={`
-                      absolute px-4 py-2 rounded-lg font-bold text-xl
+                      absolute px-4 py-2 rounded-lg font-bold text-xl cursor-pointer
                       ${word.correct ? 'bg-green-100 border-green-300' : 'bg-red-100 border-red-300'} 
-                      border-2 pointer-events-none
+                      border-2 hover:scale-105 transition-transform
                     `}
                     style={{
                       left: `${word.position.x}px`,
                       top: `${word.position.y}px`,
                       transform: 'translate(-50%, -50%)'
                     }}
+                    onClick={(e) => handleWordClick(e, word)}
                   >
                     {word.word}
                   </div>
                 ))}
-                
-                {/* Crosshair */}
-                <div 
-                  className="absolute w-20 h-20 pointer-events-none"
-                  style={{
-                    left: `${crosshairPosition.x}px`,
-                    top: `${crosshairPosition.y}px`,
-                    transform: 'translate(-50%, -50%)'
-                  }}
-                >
-                  <Crosshair 
-                    className="text-red-500 h-full w-full animate-pulse" 
-                    strokeWidth={1.5}
-                  />
-                </div>
               </div>
             </Card>
             
