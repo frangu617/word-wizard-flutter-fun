@@ -1,5 +1,8 @@
 import { toast } from "@/components/ui/use-toast";
 
+// Local storage key for custom sight words
+const CUSTOM_SIGHT_WORDS_KEY = 'wordWizard_customSightWords';
+
 // Sight words frequently used in early reading
 export const sightWords = [
   "the", "of", "and", "a", "to", "in", "is", "you", "that", "it", 
@@ -11,6 +14,65 @@ export const sightWords = [
   "some", "her", "would", "make", "like", "him", "into", "time", "has", "look",
   "two", "more", "write", "go", "see", "number", "no", "way", "could", "people"
 ];
+
+// Function to get custom sight words from local storage
+export const getCustomSightWords = (): string[] => {
+  if (typeof window === 'undefined') {
+    return [];
+  }
+  
+  try {
+    const storedWords = localStorage.getItem(CUSTOM_SIGHT_WORDS_KEY);
+    return storedWords ? JSON.parse(storedWords) : [];
+  } catch (error) {
+    console.error('Error getting custom sight words from local storage:', error);
+    return [];
+  }
+};
+
+// Function to add a custom sight word to local storage
+export const addCustomSightWord = (word: string): void => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+  
+  try {
+    const currentWords = getCustomSightWords();
+    
+    // Check if word already exists
+    if (currentWords.includes(word)) {
+      toast({
+        title: "Word already exists",
+        description: `"${word}" is already in your sight words.`,
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Add new word
+    const updatedWords = [...currentWords, word];
+    localStorage.setItem(CUSTOM_SIGHT_WORDS_KEY, JSON.stringify(updatedWords));
+  } catch (error) {
+    console.error('Error adding custom sight word to local storage:', error);
+    toast({
+      title: "Error",
+      description: "Could not save the word. Please try again.",
+      variant: "destructive"
+    });
+  }
+};
+
+// Function to get all sight words (built-in + custom)
+export const getSightWords = (): string[] => {
+  return [...sightWords, ...getCustomSightWords()];
+};
+
+// Generate an array of random words for the flashcards from our sight words array
+export const getRandomWords = (count: number = 10) => {
+  const allWords = getSightWords();
+  const shuffled = [...allWords].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+};
 
 // Word search game words by category
 export const wordSearchCategories = {
@@ -169,12 +231,6 @@ export const fetchWordDefinition = async (word: string) => {
     });
     return null;
   }
-};
-
-// Generate an array of random words for the flashcards from our sight words array
-export const getRandomWords = (count: number = 10) => {
-  const shuffled = [...sightWords].sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, count);
 };
 
 // Function to create a word search puzzle grid

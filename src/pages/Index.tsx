@@ -1,14 +1,20 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import KidNavButton from '@/components/KidNavButton';
-import { Book, Search, Clock, BookOpen, Hash, Target } from 'lucide-react';
+import { Book, Search, Clock, BookOpen, Hash, Target, Plus } from 'lucide-react';
 import { Flashcard } from '@/components/lucide-icons';
-import { getRandomWords } from '@/services/wordService';
+import { getRandomWords, getSightWords, addCustomSightWord } from '@/services/wordService';
 import WordCard from '@/components/WordCard';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { toast } from '@/components/ui/use-toast';
 
 const Index = () => {
   const [featuredWords, setFeaturedWords] = React.useState<string[]>([]);
   const [currentWordIndex, setCurrentWordIndex] = React.useState(0);
+  const [newWord, setNewWord] = useState('');
+  const [showAddWordDialog, setShowAddWordDialog] = useState(false);
 
   React.useEffect(() => {
     // Get 5 random sight words to feature
@@ -17,6 +23,43 @@ const Index = () => {
 
   const nextWord = () => {
     setCurrentWordIndex((prev) => (prev + 1) % featuredWords.length);
+  };
+
+  const handleAddWord = () => {
+    const word = newWord.trim().toLowerCase();
+    
+    if (!word) {
+      toast({
+        title: "Word is empty",
+        description: "Please enter a word",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (word.length > 10) {
+      toast({
+        title: "Word is too long",
+        description: "Word must be 10 characters or less",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Add the word to the list
+    addCustomSightWord(word);
+    
+    // Refresh the featured words
+    setFeaturedWords(getRandomWords(5));
+    
+    // Reset input and close dialog
+    setNewWord('');
+    setShowAddWordDialog(false);
+    
+    toast({
+      title: "Word added!",
+      description: `"${word}" has been added to your sight words.`
+    });
   };
 
   return (
@@ -31,7 +74,17 @@ const Index = () => {
       {/* Featured Sight Word */}
       {featuredWords.length > 0 && (
         <div className="mb-12 flex flex-col items-center">
-          <h2 className="text-2xl font-bold mb-4 text-kid-purple">Today's Sight Word</h2>
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="text-2xl font-bold text-kid-purple">Today's Sight Word</h2>
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="rounded-full bg-white"
+              onClick={() => setShowAddWordDialog(true)}
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
           <div className="w-full max-w-sm" onClick={nextWord}>
             <WordCard 
               word={featuredWords[currentWordIndex]} 
@@ -100,6 +153,39 @@ const Index = () => {
           Word Shooter
         </KidNavButton>
       </div>
+
+      {/* Add Word Dialog */}
+      <Dialog open={showAddWordDialog} onOpenChange={setShowAddWordDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add a New Sight Word</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex flex-col space-y-2">
+              <Input 
+                placeholder="Enter a word" 
+                value={newWord}
+                onChange={(e) => setNewWord(e.target.value)}
+                maxLength={10}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddWord();
+                  }
+                }}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddWordDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddWord} className="bg-kid-purple hover:bg-kid-purple/90">
+              Add Word
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
