@@ -115,12 +115,6 @@ const WordShooter = () => {
     setWords(prev => prev.filter(w => w !== word));
   };
   
-  // Handle word click
-  const handleWordClick = (e: React.MouseEvent, word: {word: string; correct: boolean; position: {x: number; y: number}}) => {
-    e.stopPropagation();
-    shootWord(word);
-  };
-  
   return (
     <div className="min-h-screen p-4 bg-gradient-to-b from-blue-100 to-blue-50">
       <header className="flex justify-between items-center mb-6">
@@ -159,7 +153,7 @@ const WordShooter = () => {
                 className="relative bg-gradient-to-b from-blue-50 to-blue-100 h-[500px]"
               >
                 {words.map((word, index) => (
-                  <div
+                  <button
                     key={`${word.word}-${index}-${word.position.x}-${word.position.y}`}
                     className={`
                       absolute px-4 py-2 rounded-lg font-bold text-xl cursor-pointer
@@ -171,10 +165,10 @@ const WordShooter = () => {
                       top: `${word.position.y}px`,
                       transform: 'translate(-50%, -50%)'
                     }}
-                    onClick={(e) => handleWordClick(e, word)}
+                    onClick={() => shootWord(word)}
                   >
                     {word.word}
-                  </div>
+                  </button>
                 ))}
               </div>
             </Card>
