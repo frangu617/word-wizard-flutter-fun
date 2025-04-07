@@ -597,6 +597,32 @@ const tryPlaceVertical = (
   return false;
 };
 
+// Common English words dictionary - a small subset for validating misspellings
+// This will help us check if a misspelled word is actually another valid word
+const commonEnglishWords = new Set([
+  // Basic everyday words
+  "the", "be", "to", "of", "and", "a", "in", "that", "have", "it", "for", "not", "on", "with", "he", "as", "you", "do", 
+  "at", "this", "but", "his", "by", "from", "they", "we", "say", "her", "she", "or", "an", "will", "my", "one", "all", 
+  "would", "there", "their", "what", "so", "up", "out", "if", "about", "who", "get", "which", "go", "me", "when",
+  
+  // Common household objects and concepts
+  "house", "home", "room", "door", "window", "bed", "chair", "table", "food", "water", "book", "car", "bus", "train",
+  "day", "night", "sun", "moon", "star", "sky", "rain", "snow", "tree", "flower", "bird", "fish", "cat", "dog",
+  
+  // Common short words often confused
+  "bead", "bed", "bad", "bid", "head", "heed", "had", "hid", "red", "reed", "read", "rid", "led", "lead", "lid",
+  "set", "sat", "sit", "bet", "bat", "bit", "let", "lat", "lit", "met", "mat", "mitt", "net", "nat", "nit",
+  "pen", "pan", "pin", "ten", "tan", "tin", "men", "man", "min", "den", "dan", "din",
+  
+  // Words from our game categories
+  ...wordSearchCategories.animals,
+  ...wordSearchCategories.colors,
+  ...wordSearchCategories.food,
+  ...wordSearchCategories.body,
+  ...wordSearchCategories.clothes,
+  ...wordSearchCategories.school
+]);
+
 // Function to generate misspelled variants of words for the shooting game
 export const generateMisspelledWords = (level: number) => {
   // Get a random word from our word categories
@@ -607,7 +633,23 @@ export const generateMisspelledWords = (level: number) => {
   const word = words[Math.floor(Math.random() * words.length)];
   
   // Create a misspelled version
-  const misspelled = createMisspelling(word, level);
+  let misspelled = createMisspelling(word, level);
+  
+  // Check if the misspelled word is actually another valid English word
+  // If so, keep generating new misspellings until we get one that's not a real word
+  let attempts = 0;
+  const maxAttempts = 10;
+  
+  while (commonEnglishWords.has(misspelled) && attempts < maxAttempts) {
+    misspelled = createMisspelling(word, level);
+    attempts++;
+  }
+  
+  // If we couldn't find a non-word misspelling after multiple attempts,
+  // use a more aggressive misspelling strategy
+  if (commonEnglishWords.has(misspelled)) {
+    misspelled = createAggressiveMisspelling(word);
+  }
   
   // Randomly decide which is correct (the original or the misspelled)
   const result = [
@@ -678,4 +720,42 @@ const createMisspelling = (word: string, level: number) => {
   }
   
   return misspelled;
+};
+
+// Function to create a more aggressive misspelling that is unlikely to be a real word
+const createAggressiveMisspelling = (word: string): string => {
+  // Split the word into letters
+  const letters = word.split('');
+  
+  // Apply multiple misspelling techniques
+  // 1. Swap two adjacent letters
+  if (word.length >= 3) {
+    const i = Math.floor(Math.random() * (word.length - 1));
+    const temp = letters[i];
+    letters[i] = letters[i + 1];
+    letters[i + 1] = temp;
+  }
+  
+  // 2. Replace a letter with an uncommon character combination
+  if (word.length >= 2) {
+    const replacements: Record<string, string> = {
+      'a': 'ah', 'e': 'eh', 'i': 'ih', 'o': 'oh', 'u': 'uh',
+      't': 'tt', 's': 'ss', 'p': 'pp', 'r': 'rr', 'n': 'nn'
+    };
+    
+    const randomPosition = Math.floor(Math.random() * word.length);
+    const letter = word[randomPosition];
+    
+    if (replacements[letter]) {
+      letters[randomPosition] = replacements[letter];
+    } else if ('aeiou'.includes(letter)) {
+      // For vowels without specific replacements
+      letters[randomPosition] = 'q';
+    } else {
+      // For consonants without specific replacements
+      letters[randomPosition] = 'x';
+    }
+  }
+  
+  return letters.join('');
 };
