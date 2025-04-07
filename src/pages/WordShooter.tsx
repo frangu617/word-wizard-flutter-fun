@@ -1,16 +1,15 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Home, RefreshCw, Trophy, Star, ShieldAlert } from 'lucide-react';
+import { Home, RefreshCw, Trophy, Star, ShieldAlert, Sparkles, Lightbulb, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
 import { useToast } from "@/hooks/use-toast";
 import ReactConfetti from 'react-confetti';
 import audioService from '@/services/audioService';
 import { generateMisspelledWords } from '@/services/wordService';
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 // High score interface
 interface HighScore {
@@ -21,6 +20,28 @@ interface HighScore {
 
 // Difficulty types
 type Difficulty = 'easy' | 'medium' | 'hard';
+
+// Difficulty descriptions
+const difficultyInfo = {
+  easy: {
+    title: "Easy",
+    description: "Words are color-coded: green for correct spelling, red for misspelled words. 60-second time limit.",
+    icon: <Sparkles className="h-4 w-4 text-yellow-500" />,
+    stars: 1
+  },
+  medium: {
+    title: "Medium",
+    description: "All words appear in random colors. You'll need to identify correct spellings without color hints. 60-second time limit.",
+    icon: <Lightbulb className="h-4 w-4 text-yellow-500" />,
+    stars: 2
+  },
+  hard: {
+    title: "Hard",
+    description: "All words appear in neutral colors. No time limit, but game ends after 3 mistakes.",
+    icon: <Zap className="h-4 w-4 text-yellow-500" />,
+    stars: 3
+  }
+};
 
 const WordShooter = () => {
   const [score, setScore] = useState(0);
@@ -233,6 +254,33 @@ const WordShooter = () => {
     setWords(prev => prev.filter(w => w !== word));
   };
   
+  const renderDifficultyCard = (diff: Difficulty) => {
+    const info = difficultyInfo[diff];
+    const isSelected = difficulty === diff;
+    
+    return (
+      <Card 
+        className={`cursor-pointer transition-all hover:shadow-md ${isSelected ? 'ring-2 ring-kid-green shadow-lg' : 'opacity-80'}`}
+        onClick={() => setDifficulty(diff)}
+      >
+        <CardContent className="p-4">
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="text-lg font-bold">{info.title}</h3>
+            <div className="flex">
+              {[...Array(info.stars)].map((_, i) => (
+                <Star key={i} className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+              ))}
+            </div>
+          </div>
+          <div className="flex items-center gap-2 mb-2">
+            {info.icon}
+            <span className="text-sm">{info.description}</span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+  
   return (
     <div className="min-h-screen p-4 bg-gradient-to-b from-blue-100 to-blue-50">
       {showConfetti && <ReactConfetti recycle={false} />}
@@ -254,36 +302,11 @@ const WordShooter = () => {
               
               <div className="mb-6">
                 <h3 className="text-xl font-bold mb-3">Select Difficulty:</h3>
-                <RadioGroup 
-                  value={difficulty} 
-                  onValueChange={(value) => setDifficulty(value as Difficulty)}
-                  className="flex flex-col space-y-2"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="easy" id="easy" />
-                    <Label htmlFor="easy" className="flex items-center">
-                      <span className="mr-2">Easy</span> 
-                      <Star className="h-4 w-4 text-yellow-500" />
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="medium" id="medium" />
-                    <Label htmlFor="medium" className="flex items-center">
-                      <span className="mr-2">Medium</span>
-                      <Star className="h-4 w-4 text-yellow-500" />
-                      <Star className="h-4 w-4 text-yellow-500" />
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="hard" id="hard" />
-                    <Label htmlFor="hard" className="flex items-center">
-                      <span className="mr-2">Hard</span>
-                      <Star className="h-4 w-4 text-yellow-500" />
-                      <Star className="h-4 w-4 text-yellow-500" />
-                      <Star className="h-4 w-4 text-yellow-500" />
-                    </Label>
-                  </div>
-                </RadioGroup>
+                <div className="grid gap-4 md:grid-cols-3">
+                  {renderDifficultyCard('easy')}
+                  {renderDifficultyCard('medium')}
+                  {renderDifficultyCard('hard')}
+                </div>
               </div>
               
               <Button 

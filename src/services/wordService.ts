@@ -1,3 +1,4 @@
+
 import { toast } from "@/components/ui/use-toast";
 
 // Local storage key for custom sight words
@@ -614,6 +615,17 @@ const commonEnglishWords = new Set([
   "pen", "pan", "pin", "ten", "tan", "tin", "men", "man", "min", "den", "dan", "din",
   "punk", "pink", "pork", "fork", "ink", "link", "sink", "rink", "tank", "sank", "dank", "rank",
   "font", "hunt", "punt", "runt", "hint", "mint", "lint", "tint", "dent", "rent", "sent", "bent",
+  "cook", "look", "book", "took", "hook", "rook", "back", "pack", "rack", "sack", "tack", "lack",
+  "lock", "dock", "rock", "sock", "mock", "tick", "lick", "pick", "sick", "kick", "wick",
+  "fair", "hair", "pair", "chair", "stair", "flair", "fear", "dear", "near", "clear", "year",
+  "four", "pour", "roar", "soar", "boar", "door", "poor", "floor", "more", "sore", "tore", "wore",
+  "cure", "pure", "sure", "lure", "fire", "hire", "tire", "wire", "dire", "mire", "sire",
+  
+  // Basic verbs and tenses
+  "run", "runs", "running", "ran", "walk", "walks", "walking", "walked", "talk", "talks", "talking", "talked",
+  "jump", "jumps", "jumping", "jumped", "play", "plays", "playing", "played", "say", "says", "saying", "said",
+  "eat", "eats", "eating", "ate", "drink", "drinks", "drinking", "drank", "see", "sees", "seeing", "saw",
+  "hear", "hears", "hearing", "heard", "feel", "feels", "feeling", "felt", "smell", "smells", "smelling", "smelled",
   
   // Words from our game categories
   ...wordSearchCategories.animals,
@@ -624,6 +636,17 @@ const commonEnglishWords = new Set([
   ...wordSearchCategories.school
 ]);
 
+// Advanced word checking - fetches from an online dictionary API
+async function isRealWord(word: string): Promise<boolean> {
+  try {
+    const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+    return response.ok; // If response is OK, the word exists
+  } catch (error) {
+    console.error("Error checking word:", error);
+    return false; // On error, assume it's not a real word to be safe
+  }
+}
+
 // Function to generate misspelled variants of words for the shooting game
 export const generateMisspelledWords = (level: number) => {
   // Get a random word from our word categories
@@ -633,7 +656,7 @@ export const generateMisspelledWords = (level: number) => {
   
   const word = words[Math.floor(Math.random() * words.length)];
   
-  // Create a misspelled version that is guaranteed to not be a real word
+  // Create a misspelled version that is guaranteed not to be a real word
   let misspelled = createNonWordMisspelling(word);
   
   // If somehow we still got a valid word (very rare), use the aggressive approach
