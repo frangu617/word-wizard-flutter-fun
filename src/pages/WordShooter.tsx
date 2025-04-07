@@ -1,11 +1,19 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Home, RefreshCw } from 'lucide-react';
+import { Home, RefreshCw, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import audioService from '@/services/audioService';
 import { generateMisspelledWords } from '@/services/wordService';
+
+// High score interface
+interface HighScore {
+  score: number;
+  date: string;
+  level: number;
+}
 
 const WordShooter = () => {
   const [score, setScore] = useState(0);
@@ -14,7 +22,16 @@ const WordShooter = () => {
   const [gameActive, setGameActive] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
+  const [highScores, setHighScores] = useState<HighScore[]>([]);
   const gameAreaRef = useRef<HTMLDivElement>(null);
+  
+  // Load high scores from local storage on mount
+  useEffect(() => {
+    const storedScores = localStorage.getItem('wordShooterHighScores');
+    if (storedScores) {
+      setHighScores(JSON.parse(storedScores));
+    }
+  }, []);
   
   // Start the game
   const startGame = () => {
@@ -23,6 +40,7 @@ const WordShooter = () => {
     setGameActive(true);
     setGameOver(false);
     setTimeLeft(60);
+    setWords([]);
     spawnWords();
   };
   
@@ -34,8 +52,7 @@ const WordShooter = () => {
       setTimeLeft(prev => {
         if (prev <= 1) {
           clearInterval(timer);
-          setGameActive(false);
-          setGameOver(true);
+          endGame();
           return 0;
         }
         return prev - 1;
@@ -79,6 +96,28 @@ const WordShooter = () => {
       audioService.playSound('success');
     }
   }, [score]);
+  
+  // End game and save high score
+  const endGame = () => {
+    setGameActive(false);
+    setGameOver(true);
+    setWords([]); // Clear words from screen
+    
+    // Create new high score entry
+    const newScore: HighScore = {
+      score: score,
+      date: new Date().toLocaleString(),
+      level: level
+    };
+    
+    // Update high scores
+    const updatedHighScores = [...highScores, newScore]
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5); // Keep only top 5 scores
+    
+    setHighScores(updatedHighScores);
+    localStorage.setItem('wordShooterHighScores', JSON.stringify(updatedHighScores));
+  };
   
   // Spawn new words
   const spawnWords = () => {
@@ -152,8 +191,7 @@ const WordShooter = () => {
                 ref={gameAreaRef}
                 className="relative bg-gradient-to-b from-blue-50 to-blue-100 h-[500px]"
               >
-                {words.map((word, index) => (
-                  
+                {gameActive && words.map((word, index) => (
                   <button
                     key={`${word.word}-${index}-${word.position.x}-${word.position.y}`}
                     className={`
@@ -169,27 +207,59 @@ const WordShooter = () => {
                     }}
                     onClick={event => {
                       event.preventDefault();
-                      shootWord(word)
+                      shootWord(word);
                     }}
                   >
                     {word.word}
                   </button>
                 ))}
+                
+                {gameOver && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-white/80 backdrop-blur-sm">
+                    <div className="text-center mb-6">
+                      <h2 className="text-4xl font-bold text-kid-red mb-2">Game Over!</h2>
+                      <p className="text-2xl font-bold mb-4">Final Score: {score}</p>
+                      <Button 
+                        onClick={startGame}
+                        className="bg-kid-green hover:bg-kid-green/90 text-xl py-4 px-6 flex items-center gap-2 mb-6"
+                      >
+                        <RefreshCw className="h-5 w-5" />
+                        Play Again
+                      </Button>
+                    </div>
+                    
+                    {highScores.length > 0 && (
+                      <div className="w-full max-w-md">
+                        <h3 className="text-xl font-bold flex items-center gap-2 mb-2">
+                          <Trophy className="h-5 w-5 text-yellow-500" />
+                          High Scores
+                        </h3>
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Rank</TableHead>
+                              <TableHead>Score</TableHead>
+                              <TableHead>Level</TableHead>
+                              <TableHead>Date</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {highScores.map((highScore, index) => (
+                              <TableRow key={index}>
+                                <TableCell className="font-medium">{index + 1}</TableCell>
+                                <TableCell className="font-bold">{highScore.score}</TableCell>
+                                <TableCell>{highScore.level}</TableCell>
+                                <TableCell>{highScore.date}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </Card>
-            
-            {gameOver && (
-              <div className="mt-6 text-center">
-                <h2 className="text-2xl font-bold mb-4">Game Over!</h2>
-                <p className="mb-6">Final Score: {score}</p>
-                <Button 
-                  onClick={startGame}
-                  className="bg-kid-green hover:bg-kid-green/90 text-xl py-4 px-6"
-                >
-                  Play Again
-                </Button>
-              </div>
-            )}
           </>
         )}
       </div>
