@@ -18,7 +18,13 @@ export default function WordShooterWarning(){
             <Card className="kid-bubble border-kid-green p-6">
                 <CardContent className="pt-0 text-center">
                     <h3 className="text-2xl font-bold mb-4">This game works well with touch controls, not with mouse or keyboard.</h3>
-                    <p className="mb-4">To continue to game please touch the button below.</p>
+                    <p className="mb-4">Please use your phone to play this game for the best experience.</p>
+                    <Card className = 'kid-bubble border-kid-red p-6'>
+                        <CardContent className="pt-0 text-center">
+                            <p className='mb-4'>Because this is a work in progress, some words that are the misspelled version of other words may be actual words, but will count as errors because the game creates these on the go, and not from a database and because of this it thinks it is in fact a misspelled word and not a different word.</p>
+                        </CardContent>
+                    </Card>
+                    <p className="mb-4 mt-4 text-center text-bold">To continue to game please touch the button below.</p>
                     <div className="flex justify-center">
                 <KidNavButton
                     to="/word-shooter"
