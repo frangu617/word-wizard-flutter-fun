@@ -597,8 +597,7 @@ const tryPlaceVertical = (
   return false;
 };
 
-// Common English words dictionary - a small subset for validating misspellings
-// This will help us check if a misspelled word is actually another valid word
+// Common English words dictionary - a comprehensive set for validating misspellings
 const commonEnglishWords = new Set([
   // Basic everyday words
   "the", "be", "to", "of", "and", "a", "in", "that", "have", "it", "for", "not", "on", "with", "he", "as", "you", "do", 
@@ -613,6 +612,8 @@ const commonEnglishWords = new Set([
   "bead", "bed", "bad", "bid", "head", "heed", "had", "hid", "red", "reed", "read", "rid", "led", "lead", "lid",
   "set", "sat", "sit", "bet", "bat", "bit", "let", "lat", "lit", "met", "mat", "mitt", "net", "nat", "nit",
   "pen", "pan", "pin", "ten", "tan", "tin", "men", "man", "min", "den", "dan", "din",
+  "punk", "pink", "pork", "fork", "ink", "link", "sink", "rink", "tank", "sank", "dank", "rank",
+  "font", "hunt", "punt", "runt", "hint", "mint", "lint", "tint", "dent", "rent", "sent", "bent",
   
   // Words from our game categories
   ...wordSearchCategories.animals,
@@ -632,21 +633,10 @@ export const generateMisspelledWords = (level: number) => {
   
   const word = words[Math.floor(Math.random() * words.length)];
   
-  // Create a misspelled version
-  let misspelled = createMisspelling(word, level);
+  // Create a misspelled version that is guaranteed to not be a real word
+  let misspelled = createNonWordMisspelling(word);
   
-  // Check if the misspelled word is actually another valid English word
-  // If so, keep generating new misspellings until we get one that's not a real word
-  let attempts = 0;
-  const maxAttempts = 10;
-  
-  while (commonEnglishWords.has(misspelled) && attempts < maxAttempts) {
-    misspelled = createMisspelling(word, level);
-    attempts++;
-  }
-  
-  // If we couldn't find a non-word misspelling after multiple attempts,
-  // use a more aggressive misspelling strategy
+  // If somehow we still got a valid word (very rare), use the aggressive approach
   if (commonEnglishWords.has(misspelled)) {
     misspelled = createAggressiveMisspelling(word);
   }
@@ -660,7 +650,45 @@ export const generateMisspelledWords = (level: number) => {
   return result;
 };
 
-// Function to create a misspelled version of a word
+// Function to create a misspelled version that's guaranteed not to be a real word
+const createNonWordMisspelling = (word: string): string => {
+  // Create an initial misspelling
+  let misspelled = createMisspelling(word, 1);
+  let attempts = 0;
+  const maxAttempts = 15;
+  
+  // Keep trying until we find a non-word misspelling
+  while (commonEnglishWords.has(misspelled) && attempts < maxAttempts) {
+    if (attempts < 5) {
+      // First few attempts: try simple misspellings
+      misspelled = createMisspelling(word, 1);
+    } else if (attempts < 10) {
+      // Next few attempts: try more complex misspellings
+      misspelled = createMisspelling(word, 3);
+    } else {
+      // Last resort: combine multiple misspelling techniques
+      misspelled = createAggressiveMisspelling(word);
+    }
+    attempts++;
+  }
+  
+  // If we've exhausted our attempts and still have a valid word,
+  // use a guaranteed approach by adding 'qq' to the word
+  if (commonEnglishWords.has(misspelled)) {
+    if (word.length > 3) {
+      // Insert 'qq' in the middle of the word
+      const middle = Math.floor(word.length / 2);
+      misspelled = word.substring(0, middle) + 'qq' + word.substring(middle);
+    } else {
+      // For very short words, append 'qq'
+      misspelled = word + 'qq';
+    }
+  }
+  
+  return misspelled;
+};
+
+// Function to create a misspelled version of a word (simpler approach)
 const createMisspelling = (word: string, level: number) => {
   // Higher level = more sophisticated misspellings
   const letters = word.split('');
@@ -727,7 +755,8 @@ const createAggressiveMisspelling = (word: string): string => {
   // Split the word into letters
   const letters = word.split('');
   
-  // Apply multiple misspelling techniques
+  // Apply multiple misspelling techniques at once for a more drastic change
+  
   // 1. Swap two adjacent letters
   if (word.length >= 3) {
     const i = Math.floor(Math.random() * (word.length - 1));
@@ -755,6 +784,13 @@ const createAggressiveMisspelling = (word: string): string => {
       // For consonants without specific replacements
       letters[randomPosition] = 'x';
     }
+  }
+  
+  // 3. Add a guaranteed non-English letter combination if the word is long enough
+  if (word.length >= 4) {
+    // Insert 'zx' at a random position (not the first or last letter)
+    const insertPos = 1 + Math.floor(Math.random() * (word.length - 2));
+    letters.splice(insertPos, 0, 'z', 'x');
   }
   
   return letters.join('');
