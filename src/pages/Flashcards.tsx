@@ -260,7 +260,7 @@ const Flashcards = () => {
             
             <Button 
               onClick={shuffleWords} 
-              className="bg-kid-green hover:bg-kid-green/80 p-6"
+              className="bg-kid-yellow hover:bg-kid-yellow/80 p-6"
             >
               <Repeat className="mr-2" /> Shuffle Words
             </Button>
@@ -270,7 +270,7 @@ const Flashcards = () => {
             <p className="text-xl">No flashcards available. Add some custom words!</p>
             <Button 
               onClick={() => setShowCustomDialog(true)}
-              className="mt-4 bg-kid-green hover:bg-kid-green/80"
+              className="mt-4 bg-kid-yellow hover:bg-kid-yellow/80"
             >
               <Plus className="mr-2" /> Add Words
             </Button>

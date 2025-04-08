@@ -34,10 +34,12 @@ const Dictionary = () => {
   const [loading, setLoading] = useState(false);
   const [rules, setRules] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [hasSearched, setHasSearched] = useState(false);
 
   const handleSearch = async () => {
     if (!searchTerm.trim()) return;
 
+    setHasSearched(true);
     setLoading(true);
     setError(null);
     try {
@@ -200,7 +202,7 @@ const Dictionary = () => {
         </div>
       )}
 
-      {!wordData && !loading && !error && searchTerm && (
+      {hasSearched && !wordData && !loading && !error && (
         <div className="text-center my-8">
           <p className="text-xl">No word found. Try another word!</p>
         </div>
