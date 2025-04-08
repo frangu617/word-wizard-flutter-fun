@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import KidNavButton from '@/components/KidNavButton';
-import { Book, Search, Clock, BookOpen, Target, Grid3X3, Puzzle, AlignJustify, ArrowUpDown, Music, AlphabetLatin, Car, Footprints, Palette, Feather } from 'lucide-react';
+import { Book, Search, Clock, BookOpen, Target, Grid3X3, Puzzle, AlignJustify, ArrowUpDown, Music, Car, Footprints, Palette, Feather, Plus } from 'lucide-react';
 import { Flashcard } from '@/components/lucide-icons';
 import { getRandomWords, getSightWords, addCustomSightWord } from '@/services/wordService';
 import WordCard from '@/components/WordCard';
@@ -200,7 +199,7 @@ const Index = () => {
             <KidNavButton
               to="/missing-letter"
               color="kid-green"
-              icon={<AlphabetLatin />}
+              icon={<Feather />}
             >
               Missing Letter
             </KidNavButton>

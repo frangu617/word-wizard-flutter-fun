@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -17,7 +16,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// Define sentence templates
 const sentenceTemplates = {
   easy: [
     { sentence: "The cat is big.", words: ["The", "cat", "is", "big"] },
@@ -56,18 +54,15 @@ const SentenceBuilder = () => {
   }, [difficulty]);
   
   const startNewGame = () => {
-    // Reset state
     setIsCorrect(null);
     setShowConfetti(false);
     setShowHint(false);
     setSelectedWords([]);
     
-    // Get a random sentence from the templates
     const templates = sentenceTemplates[difficulty];
     const randomIndex = Math.floor(Math.random() * templates.length);
     setCurrentSentenceIndex(randomIndex);
     
-    // Shuffle the words
     const wordList = [...templates[randomIndex].words];
     shuffle(wordList);
     setShuffledWords(wordList);
@@ -83,14 +78,11 @@ const SentenceBuilder = () => {
   const handleDragEnd = (result: DropResult) => {
     const { source, destination } = result;
     
-    // Dropped outside the list
     if (!destination) {
       return;
     }
     
-    // Determine which list we're moving from/to
     if (source.droppableId === 'shuffled' && destination.droppableId === 'selected') {
-      // Move from shuffled to selected
       const wordToMove = shuffledWords[source.index];
       const newShuffledWords = [...shuffledWords];
       newShuffledWords.splice(source.index, 1);
@@ -102,7 +94,6 @@ const SentenceBuilder = () => {
       setSelectedWords(newSelectedWords);
     } 
     else if (source.droppableId === 'selected' && destination.droppableId === 'shuffled') {
-      // Move from selected to shuffled
       const wordToMove = selectedWords[source.index];
       const newSelectedWords = [...selectedWords];
       newSelectedWords.splice(source.index, 1);
@@ -114,14 +105,12 @@ const SentenceBuilder = () => {
       setSelectedWords(newSelectedWords);
     } 
     else if (source.droppableId === 'selected' && destination.droppableId === 'selected') {
-      // Reorder selected list
       const newSelectedWords = [...selectedWords];
       const [removed] = newSelectedWords.splice(source.index, 1);
       newSelectedWords.splice(destination.index, 0, removed);
       setSelectedWords(newSelectedWords);
     } 
     else if (source.droppableId === 'shuffled' && destination.droppableId === 'shuffled') {
-      // Reorder shuffled list
       const newShuffledWords = [...shuffledWords];
       const [removed] = newShuffledWords.splice(source.index, 1);
       newShuffledWords.splice(destination.index, 0, removed);
@@ -133,7 +122,6 @@ const SentenceBuilder = () => {
     const correctSentence = sentenceTemplates[difficulty][currentSentenceIndex].sentence;
     const userSentence = selectedWords.join(" ");
     
-    // Compare without the final period
     const isCorrectSentence = userSentence === correctSentence.slice(0, -1);
     
     setIsCorrect(isCorrectSentence);
@@ -228,7 +216,6 @@ const SentenceBuilder = () => {
           )}
           
           <DragDropContext onDragEnd={handleDragEnd}>
-            {/* Selected words - the sentence builder area */}
             <div className="mb-8">
               <div className="text-sm font-medium text-gray-500 mb-2">Your sentence:</div>
               <Droppable droppableId="selected" direction="horizontal">
@@ -271,7 +258,6 @@ const SentenceBuilder = () => {
               </Droppable>
             </div>
             
-            {/* Available words to drag */}
             <div>
               <div className="text-sm font-medium text-gray-500 mb-2">Available words:</div>
               <Droppable droppableId="shuffled" direction="horizontal">
