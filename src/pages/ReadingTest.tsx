@@ -1,13 +1,15 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Home, Play, Pause, RotateCcw, CheckCircle } from 'lucide-react';
+import { Home, Play, Pause, RotateCcw, CheckCircle, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { readingPassages } from '@/services/wordService';
+import { readingPassages, additionalReadingPassages } from '@/services/wordService';
 import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 const ReadingTest = () => {
   const [level, setLevel] = useState('beginner');
@@ -16,23 +18,50 @@ const ReadingTest = () => {
   const [wordsRead, setWordsRead] = useState(0);
   const [wpm, setWpm] = useState(0);
   const [showResults, setShowResults] = useState(false);
+  const [passages, setPassages] = useState([...readingPassages, ...additionalReadingPassages]);
+  const [selectedPassage, setSelectedPassage] = useState<number | null>(null);
+  const [showPassageSelector, setShowPassageSelector] = useState(false);
+  const [randomPassage, setRandomPassage] = useState(true);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number | null>(null);
   
-  // Get the passage for the selected level
-  const passage = readingPassages.find(p => p.level === level);
-  const totalWords = passage ? passage.text.split(/\s+/).length : 0;
+  // Filter passages by level
+  const levelPassages = passages.filter(p => p.level === level);
+  
+  // Get the current passage
+  const currentPassage = selectedPassage !== null 
+    ? levelPassages.find(p => p.id === selectedPassage) 
+    : levelPassages.length > 0 
+      ? levelPassages[Math.floor(Math.random() * levelPassages.length)] 
+      : null;
+  
+  const totalWords = currentPassage ? currentPassage.text.split(/\s+/).length : 0;
   
   useEffect(() => {
+    // When level changes, reset selected passage
+    setSelectedPassage(null);
+    
     return () => {
       // Clean up timer on unmount
       if (timerRef.current) {
         clearInterval(timerRef.current);
       }
     };
-  }, []);
+  }, [level]);
+  
+  const selectRandomPassage = () => {
+    if (levelPassages.length > 0) {
+      const randomIndex = Math.floor(Math.random() * levelPassages.length);
+      setSelectedPassage(levelPassages[randomIndex].id);
+    }
+  };
   
   const startReading = () => {
+    // If random mode is on and no passage is selected, pick a random one
+    if (randomPassage && selectedPassage === null) {
+      selectRandomPassage();
+    }
+    
     setIsReading(true);
     setShowResults(false);
     setElapsedTime(0);
@@ -62,6 +91,11 @@ const ReadingTest = () => {
     setWpm(0);
     setShowResults(false);
     startTimeRef.current = null;
+    
+    // If in random mode, reset the selected passage
+    if (randomPassage) {
+      setSelectedPassage(null);
+    }
   };
   
   const finishReading = () => {
@@ -107,19 +141,84 @@ const ReadingTest = () => {
                 onValueChange={setLevel}
                 className="space-y-4"
               >
-                {readingPassages.map((passage) => (
-                  <div key={passage.id} className="flex items-center space-x-2">
-                    <RadioGroupItem value={passage.level} id={passage.level} />
-                    <Label htmlFor={passage.level} className="text-lg capitalize">
-                      {passage.level}
-                    </Label>
-                  </div>
-                ))}
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="beginner" id="beginner" />
+                  <Label htmlFor="beginner" className="text-lg">
+                    Beginner - Short, simple sentences with basic words
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="intermediate" id="intermediate" />
+                  <Label htmlFor="intermediate" className="text-lg">
+                    Intermediate - Longer sentences with more complex vocabulary
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="advanced" id="advanced" />
+                  <Label htmlFor="advanced" className="text-lg">
+                    Advanced - Multiple paragraphs with rich vocabulary
+                  </Label>
+                </div>
               </RadioGroup>
+              
+              <div className="mt-6 flex items-center space-x-2">
+                <input 
+                  type="checkbox" 
+                  id="randomPassage" 
+                  checked={randomPassage} 
+                  onChange={() => setRandomPassage(!randomPassage)}
+                  className="h-5 w-5"
+                />
+                <Label htmlFor="randomPassage" className="text-lg">
+                  Use random passages (recommended for testing reading ability)
+                </Label>
+              </div>
+              
+              {!randomPassage && (
+                <div className="mt-4">
+                  <Dialog open={showPassageSelector} onOpenChange={setShowPassageSelector}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" className="w-full border-kid-purple text-kid-purple">
+                        <BookOpen className="mr-2" /> 
+                        {selectedPassage 
+                          ? `Selected: ${currentPassage?.title}` 
+                          : "Select a specific passage"}
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Select a Reading Passage</DialogTitle>
+                      </DialogHeader>
+                      <div className="py-4 max-h-[60vh] overflow-y-auto">
+                        {levelPassages.map((passage) => (
+                          <div 
+                            key={passage.id}
+                            className={`p-4 mb-2 rounded-lg cursor-pointer ${
+                              selectedPassage === passage.id 
+                                ? 'bg-kid-purple/20 border-2 border-kid-purple' 
+                                : 'bg-gray-100 hover:bg-gray-200'
+                            }`}
+                            onClick={() => {
+                              setSelectedPassage(passage.id);
+                              setShowPassageSelector(false);
+                            }}
+                          >
+                            <h3 className="font-bold text-lg">{passage.title}</h3>
+                            <p className="text-gray-600">
+                              {passage.text.slice(0, 100)}...
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              )}
               
               <Button 
                 onClick={startReading} 
                 className="mt-6 bg-kid-purple hover:bg-kid-purple/80 w-full text-xl py-6"
+                disabled={!randomPassage && selectedPassage === null}
               >
                 <Play className="mr-2" /> Start Reading
               </Button>
@@ -127,7 +226,7 @@ const ReadingTest = () => {
           </Card>
         )}
         
-        {isReading && passage && (
+        {isReading && currentPassage && (
           <div>
             <div className="flex justify-between items-center mb-4">
               <div className="text-2xl font-bold text-kid-purple">
@@ -151,10 +250,10 @@ const ReadingTest = () => {
             
             <Card className="kid-bubble border-kid-purple mb-8">
               <CardHeader>
-                <CardTitle className="text-kid-purple">{passage.title}</CardTitle>
+                <CardTitle className="text-kid-purple">{currentPassage.title}</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-xl leading-relaxed">{passage.text}</p>
+                <p className="text-xl leading-relaxed">{currentPassage.text}</p>
                 
                 <div className="mt-8">
                   <Button

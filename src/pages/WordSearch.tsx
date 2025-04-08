@@ -9,6 +9,8 @@ import { wordSearchCategories, generateWordSearch } from '@/services/wordService
 import audioService from '@/services/audioService';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import WordEntryForm from '@/components/WordEntryForm';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 
 const WordSearch = () => {
   const [category, setCategory] = useState<keyof typeof wordSearchCategories | 'custom'>('animals');
@@ -20,22 +22,31 @@ const WordSearch = () => {
   const [foundWords, setFoundWords] = useState<Set<string>>(new Set());
   const [selectedCells, setSelectedCells] = useState<Array<[number, number]>>([]);
   const [showCustomDialog, setShowCustomDialog] = useState(false);
+  const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('easy');
   
-  // Generate a new word search puzzle when category or custom words change
+  // Define grid sizes and word counts based on difficulty
+  const difficultySettings = {
+    easy: { gridSize: 8, wordCount: 6 },
+    medium: { gridSize: 10, wordCount: 8 },
+    hard: { gridSize: 12, wordCount: 10 }
+  };
+  
+  // Generate a new word search puzzle when category, custom words, or difficulty change
   useEffect(() => {
     generateNewPuzzle();
-  }, [category, customWords]);
+  }, [category, customWords, difficulty]);
   
   const generateNewPuzzle = () => {
     let words: string[];
+    const { gridSize, wordCount } = difficultySettings[difficulty];
     
     if (category === 'custom') {
-      words = customWords.length > 0 ? customWords : wordSearchCategories.animals.slice(0, 6);
+      words = customWords.length > 0 ? customWords : wordSearchCategories.animals.slice(0, wordCount);
     } else {
-      words = wordSearchCategories[category].slice(0, 6);
+      words = wordSearchCategories[category].slice(0, wordCount);
     }
     
-    const puzzle = generateWordSearch(words, 8); // 8x8 grid
+    const puzzle = generateWordSearch(words, gridSize);
     setWordSearch(puzzle);
     setFoundWords(new Set());
     setSelectedCells([]);
@@ -199,7 +210,7 @@ const WordSearch = () => {
                   <DialogTitle>Add Your Own Words</DialogTitle>
                 </DialogHeader>
                 <div className="py-4">
-                  <WordEntryForm onAddWords={handleAddCustomWords} maxWords={8} />
+                  <WordEntryForm onAddWords={handleAddCustomWords} maxWords={10} />
                 </div>
               </DialogContent>
             </Dialog>
@@ -209,6 +220,37 @@ const WordSearch = () => {
             Found: {foundWords.size}/{wordSearch?.placedWords.length || 0}
           </div>
         </div>
+        
+        {/* Difficulty Selector */}
+        <Card className="kid-bubble border-kid-green mb-6">
+          <CardContent className="pt-6">
+            <h3 className="text-xl font-bold mb-4">Select Difficulty:</h3>
+            <RadioGroup
+              value={difficulty}
+              onValueChange={(value) => setDifficulty(value as 'easy' | 'medium' | 'hard')}
+              className="flex flex-wrap gap-4"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="easy" id="easy" />
+                <Label htmlFor="easy" className="text-lg">
+                  Easy (8×8 grid, 6 words)
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="medium" id="medium" />
+                <Label htmlFor="medium" className="text-lg">
+                  Medium (10×10 grid, 8 words)
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="hard" id="hard" />
+                <Label htmlFor="hard" className="text-lg">
+                  Hard (12×12 grid, 10 words)
+                </Label>
+              </div>
+            </RadioGroup>
+          </CardContent>
+        </Card>
         
         <div className="flex flex-col md:flex-row gap-6">
           {/* Word List */}
@@ -235,14 +277,14 @@ const WordSearch = () => {
           {/* Word Search Grid */}
           <Card className="kid-bubble border-kid-green flex-1">
             <CardContent className="pt-6">
-              <div className="grid grid-cols-8 gap-1">
+              <div className={`grid grid-cols-${difficultySettings[difficulty].gridSize} gap-1`}>
                 {wordSearch?.grid.map((row, rowIndex) => (
                   row.map((letter, colIndex) => (
                     <div
                       key={`${rowIndex}-${colIndex}`}
                       className={`
                         w-full aspect-square flex items-center justify-center 
-                        text-xl font-bold cursor-pointer transition-colors uppercase
+                        ${difficulty === 'hard' ? 'text-sm' : difficulty === 'medium' ? 'text-base' : 'text-xl'} font-bold cursor-pointer transition-colors uppercase
                         ${isCellSelected(rowIndex, colIndex) 
                           ? 'bg-kid-green text-white' 
                           : 'hover:bg-kid-green/20'}

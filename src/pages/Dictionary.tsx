@@ -3,11 +3,12 @@ import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Home, Search, Volume2 } from 'lucide-react';
+import { Home, Search, Volume2, BookOpen, AlertTriangle } from 'lucide-react';
 import { fetchWordDefinition, getPronunciationRules, splitIntoSyllables } from '@/services/wordService';
 import audioService from '@/services/audioService';
 import SyllableWord from '@/components/SyllableWord';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 interface WordDefinition {
   word: string;
@@ -29,13 +30,21 @@ const Dictionary = () => {
   const [wordData, setWordData] = useState<WordDefinition | null>(null);
   const [loading, setLoading] = useState(false);
   const [rules, setRules] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
   
   const handleSearch = async () => {
     if (!searchTerm.trim()) return;
     
     setLoading(true);
+    setError(null);
     try {
       const data = await fetchWordDefinition(searchTerm);
+      
+      if (!data) {
+        setWordData(null);
+        return;
+      }
+      
       setWordData(data);
       
       // Get pronunciation rules
@@ -47,6 +56,7 @@ const Dictionary = () => {
     } catch (error) {
       console.error('Error fetching word:', error);
       setWordData(null);
+      setError('We couldn\'t find that word in our dictionary. Try another word!');
     } finally {
       setLoading(false);
     }
@@ -75,6 +85,19 @@ const Dictionary = () => {
       </header>
       
       <div className="max-w-2xl mx-auto mb-8">
+        <Card className="kid-bubble border-kid-blue mb-6">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 mb-4">
+              <BookOpen className="text-kid-blue h-6 w-6" />
+              <h2 className="text-xl font-semibold">Kid-Safe Dictionary</h2>
+            </div>
+            <p className="text-gray-600">
+              This dictionary is designed for children and filters out inappropriate content. 
+              Some words or definitions may not be available.
+            </p>
+          </CardContent>
+        </Card>
+        
         <div className="flex gap-2">
           <Input
             type="text"
@@ -94,6 +117,14 @@ const Dictionary = () => {
         <div className="text-center my-8">
           <p className="text-xl">Looking up the word...</p>
         </div>
+      )}
+      
+      {error && !loading && (
+        <Alert className="max-w-2xl mx-auto mb-8 bg-yellow-50 border-yellow-500">
+          <AlertTriangle className="h-4 w-4 text-yellow-600" />
+          <AlertTitle>Word Not Found</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
       
       {wordData && !loading && (
@@ -168,13 +199,13 @@ const Dictionary = () => {
         </div>
       )}
       
-      {!wordData && !loading && searchTerm && (
+      {!wordData && !loading && !error && searchTerm && (
         <div className="text-center my-8">
           <p className="text-xl">No word found. Try another word!</p>
         </div>
       )}
       
-      {!wordData && !loading && !searchTerm && (
+      {!wordData && !loading && !error && !searchTerm && (
         <div className="text-center my-8">
           <p className="text-xl">Type a word to look it up!</p>
           <div className="mt-8 grid grid-cols-2 md:grid-cols-3 gap-4 max-w-lg mx-auto">
