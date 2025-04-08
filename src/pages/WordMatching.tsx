@@ -1,226 +1,253 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { getRandomWords } from '@/services/wordService';
 import { toast } from "@/components/ui/use-toast";
-import audioService from '@/services/audioService';
-import { ArrowLeft, RefreshCcw } from 'lucide-react';
+import { Card } from "@/components/ui/card";
 import { Link } from 'react-router-dom';
+import { ArrowLeft, RefreshCcw } from 'lucide-react';
+import { motion } from 'framer-motion';
 import Confetti from 'react-confetti';
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
+import audioService from '@/services/audioService';
+import { getRandomWords } from '@/services/wordService';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-// Define card types for different difficulty levels
-type MatchingCard = {
+// Define types for our matching cards
+type CardType = "word" | "image" | "definition";
+
+interface MatchingCard {
   id: number;
   content: string;
-  type: 'word' | 'image' | 'definition';
+  type: CardType;
   matched: boolean;
   flipped: boolean;
   matchId: number;
-};
+}
 
 const WordMatching = () => {
   const [cards, setCards] = useState<MatchingCard[]>([]);
   const [flippedCards, setFlippedCards] = useState<number[]>([]);
   const [matchedPairs, setMatchedPairs] = useState<number>(0);
-  const [totalPairs, setTotalPairs] = useState<number>(8);
-  const [moves, setMoves] = useState<number>(0);
-  const [gameWon, setGameWon] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('easy');
-
+  const [totalPairs, setTotalPairs] = useState<number>(6);
+  const [isChecking, setIsChecking] = useState<boolean>(false);
+  const [gameCompleted, setGameCompleted] = useState<boolean>(false);
+  const [gameMode, setGameMode] = useState<"word-word" | "word-definition" | "word-image">("word-word");
+  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("easy");
+  const [showConfetti, setShowConfetti] = useState<boolean>(false);
+  
+  // Start a new game when component mounts or when game mode/difficulty changes
   useEffect(() => {
     startNewGame();
-  }, [difficulty]);
-
+  }, [gameMode, difficulty]);
+  
+  // Function to start a new game
   const startNewGame = () => {
-    setIsLoading(true);
+    let newCards: MatchingCard[] = [];
+    const words = getRandomWords(totalPairs, difficulty);
+    
+    // Reset state
     setFlippedCards([]);
     setMatchedPairs(0);
-    setMoves(0);
-    setGameWon(false);
-
-    // Get random words
-    const wordCount = difficulty === 'easy' ? 8 : difficulty === 'medium' ? 6 : 5;
-    setTotalPairs(wordCount);
-    const randomWords = getRandomWords(wordCount);
+    setGameCompleted(false);
+    setShowConfetti(false);
     
-    // Create cards based on difficulty
-    let newCards: MatchingCard[] = [];
-    
-    if (difficulty === 'easy') {
-      // Match words with identical words
-      const cardPairs = randomWords.flatMap((word, index) => {
-        return [
-          {
-            id: index * 2,
-            content: word,
-            type: 'word',
-            matched: false,
-            flipped: false,
-            matchId: index
-          },
-          {
-            id: index * 2 + 1,
-            content: word, 
-            type: 'word',
-            matched: false,
-            flipped: false,
-            matchId: index
-          }
-        ];
+    if (gameMode === "word-word") {
+      // Create pairs of the same words
+      words.forEach((word, index) => {
+        // First card of the pair
+        newCards.push({
+          id: index * 2,
+          content: word,
+          type: "word",
+          matched: false,
+          flipped: false,
+          matchId: index
+        });
+        
+        // Second card of the pair
+        newCards.push({
+          id: index * 2 + 1,
+          content: word,
+          type: "word",
+          matched: false,
+          flipped: false,
+          matchId: index
+        });
       });
-      newCards = cardPairs;
-    } 
-    else if (difficulty === 'medium') {
-      // Match words with "images" (in this case just descriptions like "a red apple")
-      const images = [
-        "a red apple", "a blue ball", "a green tree", 
-        "a yellow sun", "a brown dog", "a pink flower"
-      ];
-      
-      const cardPairs = randomWords.slice(0, 6).flatMap((word, index) => {
-        return [
-          {
-            id: index * 2,
-            content: word,
-            type: 'word',
-            matched: false,
-            flipped: false,
-            matchId: index
-          },
-          {
-            id: index * 2 + 1,
-            content: images[index],
-            type: 'image',
-            matched: false,
-            flipped: false,
-            matchId: index
-          }
-        ];
-      });
-      newCards = cardPairs;
-    }
-    else {
-      // Match words with simple definitions
+    } else if (gameMode === "word-definition") {
+      // Create pairs of words and simple definitions
       const definitions = [
-        "to look at words on a page", 
-        "a color of the sky", 
-        "the opposite of big",
-        "something you write with",
-        "a place to live in"
+        "a furry pet that meows", "a pet that barks", "a yellow fruit", 
+        "used to tell time", "the color of the sky", "a red fruit",
+        "a big gray animal", "a sweet frozen treat", "falls from the sky",
+        "you sleep in it", "you sit on it", "you eat with it"
       ];
       
-      const cardPairs = randomWords.slice(0, 5).flatMap((word, index) => {
-        return [
-          {
-            id: index * 2,
-            content: word,
-            type: 'word',
-            matched: false,
-            flipped: false,
-            matchId: index
-          },
-          {
-            id: index * 2 + 1,
-            content: definitions[index],
-            type: 'definition',
-            matched: false,
-            flipped: false,
-            matchId: index
-          }
-        ];
+      words.forEach((word, index) => {
+        // Word card
+        newCards.push({
+          id: index * 2,
+          content: word,
+          type: "word",
+          matched: false,
+          flipped: false,
+          matchId: index
+        });
+        
+        // Definition card
+        newCards.push({
+          id: index * 2 + 1,
+          content: definitions[index % definitions.length],
+          type: "definition",
+          matched: false,
+          flipped: false,
+          matchId: index
+        });
       });
-      newCards = cardPairs;
+    } else if (gameMode === "word-image") {
+      // Create pairs of words and emojis (simple visual representation)
+      const emojis = ["🐱", "🐶", "🍌", "⏰", "🌈", "🍎", "🐘", "🍦", "☔", "🛏️", "🪑", "🍴"];
+      
+      words.forEach((word, index) => {
+        // Word card
+        newCards.push({
+          id: index * 2,
+          content: word,
+          type: "word",
+          matched: false,
+          flipped: false,
+          matchId: index
+        });
+        
+        // Image/emoji card
+        newCards.push({
+          id: index * 2 + 1,
+          content: emojis[index % emojis.length],
+          type: "image",
+          matched: false,
+          flipped: false,
+          matchId: index
+        });
+      });
     }
     
     // Shuffle the cards
-    const shuffledCards = [...newCards].sort(() => Math.random() - 0.5);
-    setCards(shuffledCards);
-    setIsLoading(false);
+    newCards = shuffleArray(newCards);
+    setCards(newCards);
   };
-
-  const handleCardClick = (id: number) => {
-    // Ignore clicks if already flipped, matched, or more than 2 cards flipped
-    if (
-      flippedCards.includes(id) || 
-      cards.find(card => card.id === id)?.matched || 
-      flippedCards.length >= 2 ||
-      gameWon
-    ) {
-      return;
+  
+  // Fisher-Yates shuffle algorithm
+  const shuffleArray = (array: MatchingCard[]) => {
+    const newArray = [...array];
+    for (let i = newArray.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
     }
-
-    // Flip the card
-    const newFlippedCards = [...flippedCards, id];
-    setFlippedCards(newFlippedCards);
+    return newArray;
+  };
+  
+  // Handle card click
+  const handleCardClick = (id: number) => {
+    // Don't allow clicks during checking or if card is already flipped/matched
+    if (isChecking) return;
     
-    // Check for match if 2 cards are flipped
-    if (newFlippedCards.length === 2) {
-      setMoves(prev => prev + 1);
+    const clickedCard = cards.find(card => card.id === id);
+    if (!clickedCard || clickedCard.matched || clickedCard.flipped) return;
+    
+    // Don't allow more than 2 cards to be flipped at once
+    if (flippedCards.length >= 2) return;
+    
+    // Update the flipped status of the clicked card
+    const updatedCards = cards.map(card => 
+      card.id === id ? { ...card, flipped: true } : card
+    );
+    
+    setCards(updatedCards);
+    setFlippedCards([...flippedCards, id]);
+    
+    // If this is the second card flipped, check for a match
+    if (flippedCards.length === 1) {
+      setIsChecking(true);
       
-      const firstCard = cards.find(card => card.id === newFlippedCards[0]);
-      const secondCard = cards.find(card => card.id === newFlippedCards[1]);
-      
-      if (firstCard && secondCard && firstCard.matchId === secondCard.matchId) {
-        // Match found
-        setTimeout(() => {
-          const updatedCards = cards.map(card => {
-            if (card.id === firstCard.id || card.id === secondCard.id) {
-              return { ...card, matched: true };
-            }
-            return card;
+      // Check if the two flipped cards match
+      setTimeout(() => {
+        const firstCardId = flippedCards[0];
+        const secondCardId = id;
+        
+        const firstCard = updatedCards.find(card => card.id === firstCardId);
+        const secondCard = updatedCards.find(card => card.id === secondCardId);
+        
+        if (firstCard && secondCard && firstCard.matchId === secondCard.matchId) {
+          // Match found
+          const matchedCards = updatedCards.map(card => 
+            (card.id === firstCardId || card.id === secondCardId) 
+              ? { ...card, matched: true, flipped: false } 
+              : card
+          );
+          
+          setCards(matchedCards);
+          setFlippedCards([]);
+          setMatchedPairs(prev => prev + 1);
+          
+          // Play success sound
+          audioService.playSound('success');
+          
+          // Show toast for successful match
+          toast({
+            title: "Match found!",
+            description: "Great job! Keep going.",
           });
           
-          setCards(updatedCards);
+          // Check if the game is completed
+          if (matchedPairs + 1 === totalPairs) {
+            setGameCompleted(true);
+            setShowConfetti(true);
+            
+            // Play victory sound
+            audioService.speak("Congratulations! You've matched all the pairs!");
+            
+            // Show toast for game completion
+            toast({
+              title: "Game completed!",
+              description: "Congratulations! You've matched all the pairs!",
+            });
+            
+            // Hide confetti after a few seconds
+            setTimeout(() => {
+              setShowConfetti(false);
+            }, 5000);
+          }
+        } else {
+          // No match found
+          const resetFlippedCards = updatedCards.map(card => 
+            (card.id === firstCardId || card.id === secondCardId) 
+              ? { ...card, flipped: false } 
+              : card
+          );
+          
+          setCards(resetFlippedCards);
           setFlippedCards([]);
-          setMatchedPairs(prev => {
-            const newMatched = prev + 1;
-            if (newMatched === totalPairs) {
-              setGameWon(true);
-              audioService.speak("You won! Great job!", false);
-            } else {
-              audioService.playSound('success');
-            }
-            return newMatched;
-          });
-        }, 500);
-      } else {
-        // No match
-        setTimeout(() => {
-          setFlippedCards([]);
+          
+          // Play error sound
           audioService.playSound('error');
-        }, 1000);
-      }
+        }
+        
+        setIsChecking(false);
+      }, 1000);
     }
   };
-
-  const getCardStyle = (card: MatchingCard) => {
-    if (card.matched) {
-      return "bg-green-200 text-green-800 border-2 border-green-500";
-    }
-    
-    if (flippedCards.includes(card.id)) {
-      if (card.type === 'word') {
-        return "bg-blue-100 text-blue-800 border-2 border-blue-500";
-      } else if (card.type === 'image') {
-        return "bg-purple-100 text-purple-800 border-2 border-purple-500";
-      } else {
-        return "bg-amber-100 text-amber-800 border-2 border-amber-500";
-      }
-    }
-    
-    return "bg-white hover:bg-gray-100";
-  };
-
+  
   return (
-    <div className="min-h-screen p-4 bg-gradient-to-b from-yellow-100 to-orange-50">
-      {gameWon && <Confetti recycle={false} numberOfPieces={200} />}
+    <div className="min-h-screen p-4 bg-gradient-to-b from-yellow-100 to-yellow-50">
+      {showConfetti && <Confetti recycle={false} numberOfPieces={300} />}
       
-      <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
+      <div className="max-w-5xl mx-auto">
+        <div className="flex flex-wrap justify-between items-center mb-6">
           <Link to="/">
             <Button variant="ghost" className="flex items-center gap-2">
               <ArrowLeft className="h-4 w-4" />
@@ -228,7 +255,7 @@ const WordMatching = () => {
             </Button>
           </Link>
           
-          <h1 className="text-3xl font-bold text-center text-amber-700">Word Matching</h1>
+          <h1 className="text-3xl font-bold text-center text-yellow-700">Word Matching</h1>
           
           <Button 
             variant="outline" 
@@ -240,95 +267,117 @@ const WordMatching = () => {
           </Button>
         </div>
         
-        <div className="flex flex-col md:flex-row gap-6 mb-6">
-          <div className="bg-white p-4 rounded-lg shadow flex-1">
-            <div className="flex justify-between mb-4">
-              <div>
-                <div className="text-sm text-gray-500">Matches:</div>
-                <div className="text-xl font-bold">{matchedPairs} / {totalPairs}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-500">Moves:</div>
-                <div className="text-xl font-bold">{moves}</div>
+        <div className="bg-white p-4 sm:p-6 rounded-xl shadow-lg mb-6">
+          <div className="flex flex-wrap justify-between items-center mb-6">
+            <div className="mb-4 sm:mb-0">
+              <p className="text-lg font-semibold mb-1">Game Settings:</p>
+              <div className="flex flex-wrap gap-3">
+                <div>
+                  <p className="text-sm mb-1">Mode:</p>
+                  <Select
+                    value={gameMode}
+                    onValueChange={(value) => setGameMode(value as "word-word" | "word-definition" | "word-image")}
+                  >
+                    <SelectTrigger className="w-36">
+                      <SelectValue placeholder="Game Mode" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="word-word">Word - Word</SelectItem>
+                      <SelectItem value="word-definition">Word - Definition</SelectItem>
+                      <SelectItem value="word-image">Word - Image</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <p className="text-sm mb-1">Difficulty:</p>
+                  <Select
+                    value={difficulty}
+                    onValueChange={(value) => setDifficulty(value as "easy" | "medium" | "hard")}
+                  >
+                    <SelectTrigger className="w-36">
+                      <SelectValue placeholder="Difficulty" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="easy">Easy</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="hard">Hard</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
             
-            <div className="mb-4">
-              <RadioGroup 
-                value={difficulty} 
-                onValueChange={(value) => setDifficulty(value as 'easy' | 'medium' | 'hard')}
-                className="flex space-x-4"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="easy" id="easy" />
-                  <Label htmlFor="easy">Easy</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="medium" id="medium" />
-                  <Label htmlFor="medium">Medium</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="hard" id="hard" />
-                  <Label htmlFor="hard">Hard</Label>
-                </div>
-              </RadioGroup>
+            <div className="bg-yellow-100 p-3 rounded-lg">
+              <p className="text-yellow-800">
+                <span className="font-bold">Matches:</span> {matchedPairs} / {totalPairs}
+              </p>
             </div>
-            
-            {gameWon && (
-              <div className="bg-green-100 p-3 rounded-lg text-center mb-4">
-                <p className="text-green-800 font-bold">Great job! You matched all the words!</p>
-                <p className="text-green-600">Total moves: {moves}</p>
-              </div>
-            )}
           </div>
           
-          <div className="bg-white p-4 rounded-lg shadow flex-1">
-            <h3 className="text-lg font-bold mb-2">How to Play:</h3>
-            <ul className="list-disc pl-5 space-y-1 text-sm">
-              <li>Click on cards to flip them over</li>
-              <li>Try to find matching pairs</li>
-              <li>
-                {difficulty === 'easy' && 'Match identical words'}
-                {difficulty === 'medium' && 'Match words with their images'}
-                {difficulty === 'hard' && 'Match words with their definitions'}
-              </li>
-              <li>Complete the game with as few moves as possible</li>
-            </ul>
-          </div>
-        </div>
-        
-        {isLoading ? (
-          <div className="text-center p-8">Loading game...</div>
-        ) : (
-          <div className={`grid gap-3 w-full mx-auto ${
-            difficulty === 'easy' 
-              ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4' 
-              : difficulty === 'medium'
-                ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4'
-                : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5'
-          }`}>
-            {cards.map(card => (
-              <Card
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+            {cards.map((card) => (
+              <motion.div
                 key={card.id}
-                className={`
-                  p-3 cursor-pointer flex items-center justify-center 
-                  min-h-24 text-center transition-all transform
-                  ${getCardStyle(card)}
-                  ${(card.matched || flippedCards.includes(card.id)) ? 'scale-105' : ''}
-                `}
+                initial={{ rotateY: 0 }}
+                animate={{ rotateY: card.flipped ? 180 : 0 }}
+                transition={{ duration: 0.5 }}
+                whileHover={{ scale: card.matched ? 1 : 1.05 }}
                 onClick={() => handleCardClick(card.id)}
               >
-                {card.matched || flippedCards.includes(card.id) ? (
-                  <div className="font-medium">
-                    {card.content}
-                  </div>
-                ) : (
-                  <div className="text-xl font-bold text-gray-400">?</div>
-                )}
-              </Card>
+                <Card className={`
+                  h-28 flex items-center justify-center cursor-pointer p-3 text-center
+                  ${card.matched ? 'bg-green-100 border-green-300' : ''}
+                  ${card.flipped ? 'bg-yellow-50' : 'bg-white'}
+                `}>
+                  {card.flipped || card.matched ? (
+                    <div className="flex items-center justify-center h-full w-full">
+                      {card.type === "image" ? (
+                        <span className="text-4xl">{card.content}</span>
+                      ) : (
+                        <p className={`${card.type === "definition" ? "text-xs" : "text-xl font-bold"}`}>
+                          {card.content}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="bg-yellow-500 w-full h-full rounded-md flex items-center justify-center">
+                      <span className="text-white font-bold text-xl">?</span>
+                    </div>
+                  )}
+                </Card>
+              </motion.div>
             ))}
           </div>
-        )}
+          
+          {gameCompleted && (
+            <div className="mt-6 bg-green-100 p-4 rounded-lg text-center">
+              <p className="text-green-800 font-bold text-xl">Congratulations!</p>
+              <p className="text-green-700">You've successfully matched all the pairs!</p>
+              <Button 
+                onClick={startNewGame} 
+                className="mt-3 bg-green-600 hover:bg-green-700"
+              >
+                Play Again
+              </Button>
+            </div>
+          )}
+        </div>
+        
+        <div className="bg-white p-4 rounded-lg shadow max-w-2xl mx-auto">
+          <h3 className="text-lg font-bold mb-2">How to Play:</h3>
+          <ul className="list-disc pl-5 space-y-1">
+            <li>Click on cards to flip them and find matching pairs</li>
+            <li>Only two cards can be flipped at once</li>
+            <li>Match all pairs to win the game</li>
+            <li>Choose different modes for more challenge:</li>
+            <ul className="list-circle pl-5 space-y-1 mt-1">
+              <li><span className="font-semibold">Word-Word:</span> Match identical words</li>
+              <li><span className="font-semibold">Word-Definition:</span> Match words with their definitions</li>
+              <li><span className="font-semibold">Word-Image:</span> Match words with related images</li>
+            </ul>
+          </ul>
+        </div>
       </div>
     </div>
   );
