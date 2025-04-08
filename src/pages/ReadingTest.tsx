@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Home, Play, Pause, RotateCcw, CheckCircle, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { readingPassages, additionalReadingPassages } from '@/services/wordService';
+import { readingPassages, additionalReadingPassages } from '@/services/readingPassages';
 import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';

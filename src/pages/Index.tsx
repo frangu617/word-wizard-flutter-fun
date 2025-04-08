@@ -130,16 +130,8 @@ const Index = () => {
         </KidNavButton>
         
         <KidNavButton
-          to="/syllables"
-          color="kid-orange"
-          icon={<BookOpen />}
-        >
-          Syllables
-        </KidNavButton>
-        
-        <KidNavButton
           to="/word-shooter-warning"
-          color="kid-red"
+          color="kid-orange"
           icon={<Target />}
         >
           Word Shooter
