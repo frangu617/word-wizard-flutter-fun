@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import WordEntryForm from '@/components/WordEntryForm';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import {cn} from "@/lib/utils"
 
 const WordSearch = () => {
   const [category, setCategory] = useState<keyof typeof wordSearchCategories | 'custom'>('animals');
@@ -29,6 +30,12 @@ const WordSearch = () => {
     easy: { gridSize: 8, wordCount: 6 },
     medium: { gridSize: 10, wordCount: 8 },
     hard: { gridSize: 12, wordCount: 10 }
+  };
+
+  const gridColClasses: Record<'easy' | 'medium'| 'hard', string> = {
+    easy: "grid-cols-8",
+    medium: "grid-cols-10",
+    hard: "grid-cols-12"
   };
   
   // Generate a new word search puzzle when category, custom words, or difficulty change
@@ -277,7 +284,7 @@ const WordSearch = () => {
           {/* Word Search Grid */}
           <Card className="kid-bubble border-kid-green flex-1">
             <CardContent className="pt-6">
-              <div className={`grid grid-cols-${difficultySettings[difficulty].gridSize} gap-1`}>
+              <div className={cn("grid gap-1", gridColClasses[difficulty])}> 
                 {wordSearch?.grid.map((row, rowIndex) => (
                   row.map((letter, colIndex) => (
                     <div
