@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import KidNavButton from '@/components/KidNavButton';
-import { Book, Search, Clock, BookOpen, Target, Plus } from 'lucide-react';
+import { Book, Search, Clock, BookOpen, Target, Grid3X3, Puzzle, AlignJustify, ArrowUpDown, Music, AlphabetLatin, Car, Footprints, Palette, Feather } from 'lucide-react';
 import { Flashcard } from '@/components/lucide-icons';
 import { getRandomWords, getSightWords, addCustomSightWord } from '@/services/wordService';
 import WordCard from '@/components/WordCard';
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { toast } from '@/components/ui/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Index = () => {
   const [featuredWords, setFeaturedWords] = React.useState<string[]>([]);
@@ -96,47 +97,148 @@ const Index = () => {
       )}
 
       {/* Navigation Buttons */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-        <KidNavButton
-          to="/flashcards"
-          color="kid-red"
-          icon={<Flashcard />}
-        >
-          Flashcards
-        </KidNavButton>
+      <Tabs defaultValue="core" className="w-full max-w-5xl mx-auto">
+        <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsTrigger value="core">Core Games</TabsTrigger>
+          <TabsTrigger value="all">All Games</TabsTrigger>
+        </TabsList>
         
-        <KidNavButton
-          to="/dictionary"
-          color="kid-blue"
-          icon={<Book />}
-        >
-          Dictionary
-        </KidNavButton>
+        <TabsContent value="core" className="mt-0">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            <KidNavButton
+              to="/flashcards"
+              color="kid-red"
+              icon={<Flashcard />}
+            >
+              Flashcards
+            </KidNavButton>
+            
+            <KidNavButton
+              to="/dictionary"
+              color="kid-blue"
+              icon={<Book />}
+            >
+              Dictionary
+            </KidNavButton>
+            
+            <KidNavButton
+              to="/word-search"
+              color="kid-green"
+              icon={<Search />}
+            >
+              Word Search
+            </KidNavButton>
+            
+            <KidNavButton
+              to="/reading-test"
+              color="kid-purple"
+              icon={<Clock />}
+            >
+              Reading Test
+            </KidNavButton>
+            
+            <KidNavButton
+              to="/word-shooter-warning"
+              color="kid-orange"
+              icon={<Target />}
+            >
+              Word Shooter
+            </KidNavButton>
+            
+            <KidNavButton
+              to="/syllables"
+              color="kid-teal"
+              icon={<BookOpen />}
+            >
+              Syllables
+            </KidNavButton>
+          </div>
+        </TabsContent>
         
-        <KidNavButton
-          to="/word-search"
-          color="kid-green"
-          icon={<Search />}
-        >
-          Word Search
-        </KidNavButton>
-        
-        <KidNavButton
-          to="/reading-test"
-          color="kid-purple"
-          icon={<Clock />}
-        >
-          Reading Test
-        </KidNavButton>
-        
-        <KidNavButton
-          to="/word-shooter-warning"
-          color="kid-orange"
-          icon={<Target />}
-        >
-          Word Shooter
-        </KidNavButton>
-      </div>
+        <TabsContent value="all" className="mt-0">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+            <KidNavButton
+              to="/sight-word-bingo"
+              color="kid-pink"
+              icon={<Grid3X3 />}
+            >
+              Sight Word Bingo
+            </KidNavButton>
+            
+            <KidNavButton
+              to="/word-matching"
+              color="kid-yellow"
+              icon={<Puzzle />}
+            >
+              Word Matching
+            </KidNavButton>
+            
+            <KidNavButton
+              to="/sentence-builder"
+              color="kid-indigo"
+              icon={<AlignJustify />}
+            >
+              Sentence Builder
+            </KidNavButton>
+            
+            <KidNavButton
+              to="/word-ladder"
+              color="kid-red"
+              icon={<ArrowUpDown />}
+            >
+              Word Ladder
+            </KidNavButton>
+            
+            <KidNavButton
+              to="/letter-sound-pop"
+              color="kid-blue"
+              icon={<Music />}
+            >
+              Letter Sound Pop
+            </KidNavButton>
+            
+            <KidNavButton
+              to="/missing-letter"
+              color="kid-green"
+              icon={<AlphabetLatin />}
+            >
+              Missing Letter
+            </KidNavButton>
+            
+            <KidNavButton
+              to="/rhyme-racer"
+              color="kid-purple"
+              icon={<Car />}
+            >
+              Rhyme Racer
+            </KidNavButton>
+            
+            <KidNavButton
+              to="/word-maze"
+              color="kid-orange"
+              icon={<Footprints />}
+            >
+              Word Maze
+            </KidNavButton>
+            
+            <KidNavButton
+              to="/read-and-color"
+              color="kid-teal"
+              icon={<Palette />}
+            >
+              Read and Color
+            </KidNavButton>
+            
+            <KidNavButton
+              to="/story-builder"
+              color="kid-pink"
+              icon={<Feather />}
+            >
+              Story Builder
+            </KidNavButton>
+          </div>
+        </TabsContent>
+      </Tabs>
 
       {/* Add Word Dialog */}
       <Dialog open={showAddWordDialog} onOpenChange={setShowAddWordDialog}>
