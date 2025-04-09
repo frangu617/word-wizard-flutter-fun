@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
@@ -6,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, RefreshCcw } from 'lucide-react';
 import Confetti from 'react-confetti';
 import audioService from '@/services/audioService';
-import { getRandomWords } from '@/services/wordService';
+import { getRandomWords, getSightWords } from '@/services/wordService';
 import GameBoard from '@/components/WordMatching/GameBoard';
 import GameControls from '@/components/WordMatching/GameControls';
 import { MatchingCard } from '@/components/WordMatching/MatchingCard';
@@ -42,7 +41,13 @@ const WordMatching = () => {
     setGridCols(currentGridSize.cols);
     
     let newCards: MatchingCard[] = [];
+    
+    // Use getRandomWords with the appropriate difficulty level
+    // This will include ALL sight words, not just custom ones
     const words = getRandomWords(currentGridSize.pairs, difficulty);
+    
+    // Log the words for debugging
+    console.log("Creating new cards with words:", words);
     
     // Reset state
     setFlippedCards([]);

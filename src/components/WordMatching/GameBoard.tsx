@@ -9,9 +9,9 @@ interface GameBoardProps {
 }
 
 const GameBoard: React.FC<GameBoardProps> = ({ cards, handleCardClick, gridCols }) => {
+  // Fix the grid classes to use template literals with proper Tailwind classes
   const getGridClasses = () => {
-    const colsClass = `grid-cols-${gridCols}`;
-    return `grid ${colsClass} gap-3`;
+    return `grid grid-cols-${gridCols} gap-3`;
   };
   
   return (
