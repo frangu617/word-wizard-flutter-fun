@@ -211,7 +211,7 @@ const RhymeRacer = () => {
       });
       
       // Remove words that have gone off the track
-      return updated.filter(word => word.position <= trackWidth);
+      return updated.filter(word => word.position * (trackWidth / 100) <= trackWidth);
     });
   };
   
@@ -370,7 +370,7 @@ const RhymeRacer = () => {
                       key={word.id}
                       className={`absolute cursor-pointer ${word.clicked ? 'opacity-50' : ''}`}
                       style={{
-                        top: `${word.lane * 20}%`,
+                        top: `${(word.lane * 20) + 5}%`,
                         left: `${word.position}%`,
                       }}
                       initial={{ x: -100 }}

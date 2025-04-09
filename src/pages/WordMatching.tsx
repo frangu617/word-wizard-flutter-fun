@@ -29,6 +29,13 @@ interface MatchingCard {
   matchId: number;
 }
 
+// Define grid sizes based on difficulty
+const gridSizes = {
+  easy: { pairs: 6, cols: 3 },
+  medium: { pairs: 8, cols: 4 },
+  hard: { pairs: 12, cols: 4 }
+};
+
 const WordMatching = () => {
   const [cards, setCards] = useState<MatchingCard[]>([]);
   const [flippedCards, setFlippedCards] = useState<number[]>([]);
@@ -39,6 +46,7 @@ const WordMatching = () => {
   const [gameMode, setGameMode] = useState<"word-word" | "word-definition" | "word-image">("word-word");
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("easy");
   const [showConfetti, setShowConfetti] = useState<boolean>(false);
+  const [gridCols, setGridCols] = useState<number>(3);
   
   // Start a new game when component mounts or when game mode/difficulty changes
   useEffect(() => {
@@ -47,8 +55,12 @@ const WordMatching = () => {
   
   // Function to start a new game
   const startNewGame = () => {
+    const currentGridSize = gridSizes[difficulty];
+    setTotalPairs(currentGridSize.pairs);
+    setGridCols(currentGridSize.cols);
+    
     let newCards: MatchingCard[] = [];
-    const words = getRandomWords(totalPairs, difficulty);
+    const words = getRandomWords(currentGridSize.pairs, difficulty);
     
     // Reset state
     setFlippedCards([]);
@@ -85,7 +97,10 @@ const WordMatching = () => {
         "a furry pet that meows", "a pet that barks", "a yellow fruit", 
         "used to tell time", "the color of the sky", "a red fruit",
         "a big gray animal", "a sweet frozen treat", "falls from the sky",
-        "you sleep in it", "you sit on it", "you eat with it"
+        "you sleep in it", "you sit on it", "you eat with it",
+        "worn on your feet", "covers your head", "used to write with",
+        "you read this", "grows in gardens", "flies in the sky",
+        "swims in water", "crawls on ground", "gives light"
       ];
       
       words.forEach((word, index) => {
@@ -111,7 +126,8 @@ const WordMatching = () => {
       });
     } else if (gameMode === "word-image") {
       // Create pairs of words and emojis (simple visual representation)
-      const emojis = ["🐱", "🐶", "🍌", "⏰", "🌈", "🍎", "🐘", "🍦", "☔", "🛏️", "🪑", "🍴"];
+      const emojis = ["🐱", "🐶", "🍌", "⏰", "🌈", "🍎", "🐘", "🍦", "☔", "🛏️", "🪑", "🍴", 
+                      "👟", "🧢", "✏️", "📚", "🌷", "🦅", "🐟", "🐛", "💡"];
       
       words.forEach((word, index) => {
         // Word card
@@ -242,6 +258,12 @@ const WordMatching = () => {
     }
   };
   
+  // Get appropriate grid classes based on difficulty
+  const getGridClasses = () => {
+    const colsClass = `grid-cols-${gridCols}`;
+    return `grid ${colsClass} gap-3`;
+  };
+  
   return (
     <div className="min-h-screen p-4 bg-gradient-to-b from-yellow-100 to-yellow-50">
       {showConfetti && <Confetti recycle={false} numberOfPieces={300} />}
@@ -299,9 +321,9 @@ const WordMatching = () => {
                       <SelectValue placeholder="Difficulty" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="easy">Easy</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="hard">Hard</SelectItem>
+                      <SelectItem value="easy">Easy (3×4)</SelectItem>
+                      <SelectItem value="medium">Medium (4×4)</SelectItem>
+                      <SelectItem value="hard">Hard (4×6)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -315,7 +337,7 @@ const WordMatching = () => {
             </div>
           </div>
           
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+          <div className={getGridClasses()}>
             {cards.map((card) => (
               <motion.div
                 key={card.id}
@@ -376,6 +398,7 @@ const WordMatching = () => {
               <li><span className="font-semibold">Word-Definition:</span> Match words with their definitions</li>
               <li><span className="font-semibold">Word-Image:</span> Match words with related images</li>
             </ul>
+            <li>Difficulty levels change both word complexity and grid size</li>
           </ul>
         </div>
       </div>
