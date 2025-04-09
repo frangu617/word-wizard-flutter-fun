@@ -1,13 +1,14 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
 import audioService from '@/services/audioService';
-import { ArrowLeft, RefreshCcw, Timer } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import Confetti from 'react-confetti';
+import GameHeader from '@/components/RhymeRacer/GameHeader';
+import RaceTrack from '@/components/RhymeRacer/RaceTrack';
+import { RacingWord } from '@/components/RhymeRacer/RacingWord';
 
 // Rhyme sets for the game
 const rhymeSets = [
@@ -25,17 +26,6 @@ const rhymeSets = [
 
 // Vehicle types for the race
 const vehicles = ["car", "rocket", "bike", "boat", "plane"];
-
-type RacingWord = {
-  id: number;
-  word: string;
-  rhymes: boolean;
-  position: number;
-  speed: number;
-  lane: number;
-  vehicle: string;
-  clicked: boolean;
-};
 
 const RhymeRacer = () => {
   const [currentRhymeSet, setCurrentRhymeSet] = useState<typeof rhymeSets[0] | null>(null);
@@ -188,6 +178,7 @@ const RhymeRacer = () => {
       clicked: false
     };
     
+    console.log("Spawning new word:", newWord);
     setRacingWords(prev => [...prev, newWord]);
   };
   
@@ -195,6 +186,7 @@ const RhymeRacer = () => {
     if (!racetrackRef.current) return;
     
     const trackWidth = racetrackRef.current.offsetWidth;
+    console.log("Track width:", trackWidth);
     
     setRacingWords(prev => {
       const updated = prev.map(word => {
@@ -202,6 +194,7 @@ const RhymeRacer = () => {
         
         // Move the word - fix position calculation
         const newPosition = word.position + word.speed;
+        console.log(`Word ${word.word} position: ${word.position} -> ${newPosition}`);
         
         // Return updated word
         return {
@@ -289,54 +282,14 @@ const RhymeRacer = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           <div className="bg-white p-4 rounded-lg shadow md:col-span-2">
-            <div className="flex justify-between items-center mb-4">
-              <div>
-                <div className="text-sm text-gray-500">Score:</div>
-                <div className="text-xl font-bold">{score}</div>
-              </div>
-              
-              <div className="text-center">
-                <div className="text-sm text-gray-500">Target Word:</div>
-                <div className="text-xl font-bold text-purple-600">
-                  {currentRhymeSet?.targetWord || "—"}
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <Timer className="h-5 w-5 text-red-500" />
-                <div className="text-xl font-bold">{timeLeft}s</div>
-              </div>
-            </div>
-            
-            {/* Difficulty selector */}
-            <div className="flex justify-center mb-4">
-              <div className="flex gap-2">
-                <Button 
-                  variant={difficulty === "easy" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => changeDifficulty("easy")}
-                  disabled={gameActive}
-                >
-                  Easy
-                </Button>
-                <Button 
-                  variant={difficulty === "medium" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => changeDifficulty("medium")}
-                  disabled={gameActive}
-                >
-                  Medium
-                </Button>
-                <Button 
-                  variant={difficulty === "hard" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => changeDifficulty("hard")}
-                  disabled={gameActive}
-                >
-                  Hard
-                </Button>
-              </div>
-            </div>
+            <GameHeader 
+              score={score}
+              targetWord={currentRhymeSet?.targetWord}
+              timeLeft={timeLeft}
+              difficulty={difficulty}
+              gameActive={gameActive}
+              onDifficultyChange={changeDifficulty}
+            />
             
             {!gameActive ? (
               <div className="flex flex-col items-center justify-center py-10">
@@ -349,59 +302,11 @@ const RhymeRacer = () => {
                 </div>
               </div>
             ) : (
-              <div 
-                ref={racetrackRef}
-                className="relative h-64 border-2 border-dashed border-gray-300 rounded-lg overflow-hidden bg-gray-50"
-              >
-                {/* Racing track with lanes */}
-                <div className="absolute inset-0 flex flex-col">
-                  {[0, 1, 2, 3, 4].map(lane => (
-                    <div 
-                      key={lane}
-                      className="flex-1 border-b border-dashed border-gray-200 last:border-b-0"
-                    />
-                  ))}
-                </div>
-                
-                {/* Racing words */}
-                <AnimatePresence>
-                  {racingWords.map(word => (
-                    <motion.div
-                      key={word.id}
-                      className={`absolute cursor-pointer ${word.clicked ? 'opacity-50' : ''}`}
-                      style={{
-                        top: `${(word.lane * 20) + 5}%`,
-                        left: `${Math.min(word.position, 90)}%`, // Cap at 90% to keep visible
-                      }}
-                      initial={{ x: -100 }}
-                      animate={{ x: 0 }}
-                      exit={{ opacity: 0 }}
-                      onClick={() => handleWordClick(word)}
-                    >
-                      <div className="relative">
-                        {/* Vehicle */}
-                        <div className="text-3xl">
-                          {word.vehicle === "car" && "🚗"}
-                          {word.vehicle === "rocket" && "🚀"}
-                          {word.vehicle === "bike" && "🚲"}
-                          {word.vehicle === "boat" && "🚢"}
-                          {word.vehicle === "plane" && "✈️"}
-                        </div>
-                        
-                        {/* Word */}
-                        <div className={`
-                          absolute top-full left-1/2 transform -translate-x-1/2 
-                          bg-white px-2 py-1 rounded-lg shadow text-sm font-bold
-                          ${word.clicked && word.rhymes ? 'text-green-600' : ''}
-                          ${word.clicked && !word.rhymes ? 'text-red-600' : ''}
-                        `}>
-                          {word.word}
-                        </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
+              <RaceTrack 
+                racetrackRef={racetrackRef}
+                racingWords={racingWords}
+                handleWordClick={handleWordClick}
+              />
             )}
           </div>
           

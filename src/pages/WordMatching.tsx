@@ -2,32 +2,14 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
-import { Card } from "@/components/ui/card";
 import { Link } from 'react-router-dom';
 import { ArrowLeft, RefreshCcw } from 'lucide-react';
-import { motion } from 'framer-motion';
 import Confetti from 'react-confetti';
 import audioService from '@/services/audioService';
 import { getRandomWords } from '@/services/wordService';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-// Define types for our matching cards
-type CardType = "word" | "image" | "definition";
-
-interface MatchingCard {
-  id: number;
-  content: string;
-  type: CardType;
-  matched: boolean;
-  flipped: boolean;
-  matchId: number;
-}
+import GameBoard from '@/components/WordMatching/GameBoard';
+import GameControls from '@/components/WordMatching/GameControls';
+import { MatchingCard } from '@/components/WordMatching/MatchingCard';
 
 // Define grid sizes based on difficulty
 const gridSizes = {
@@ -154,6 +136,8 @@ const WordMatching = () => {
     
     // Shuffle the cards
     newCards = shuffleArray(newCards);
+    
+    console.log("Creating new cards:", newCards);
     setCards(newCards);
   };
   
@@ -258,12 +242,6 @@ const WordMatching = () => {
     }
   };
   
-  // Get appropriate grid classes based on difficulty
-  const getGridClasses = () => {
-    const colsClass = `grid-cols-${gridCols}`;
-    return `grid ${colsClass} gap-3`;
-  };
-  
   return (
     <div className="min-h-screen p-4 bg-gradient-to-b from-yellow-100 to-yellow-50">
       {showConfetti && <Confetti recycle={false} numberOfPieces={300} />}
@@ -290,87 +268,20 @@ const WordMatching = () => {
         </div>
         
         <div className="bg-white p-4 sm:p-6 rounded-xl shadow-lg mb-6">
-          <div className="flex flex-wrap justify-between items-center mb-6">
-            <div className="mb-4 sm:mb-0">
-              <p className="text-lg font-semibold mb-1">Game Settings:</p>
-              <div className="flex flex-wrap gap-3">
-                <div>
-                  <p className="text-sm mb-1">Mode:</p>
-                  <Select
-                    value={gameMode}
-                    onValueChange={(value) => setGameMode(value as "word-word" | "word-definition" | "word-image")}
-                  >
-                    <SelectTrigger className="w-36">
-                      <SelectValue placeholder="Game Mode" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="word-word">Word - Word</SelectItem>
-                      <SelectItem value="word-definition">Word - Definition</SelectItem>
-                      <SelectItem value="word-image">Word - Image</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <p className="text-sm mb-1">Difficulty:</p>
-                  <Select
-                    value={difficulty}
-                    onValueChange={(value) => setDifficulty(value as "easy" | "medium" | "hard")}
-                  >
-                    <SelectTrigger className="w-36">
-                      <SelectValue placeholder="Difficulty" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="easy">Easy (3×4)</SelectItem>
-                      <SelectItem value="medium">Medium (4×4)</SelectItem>
-                      <SelectItem value="hard">Hard (4×6)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-yellow-100 p-3 rounded-lg">
-              <p className="text-yellow-800">
-                <span className="font-bold">Matches:</span> {matchedPairs} / {totalPairs}
-              </p>
-            </div>
-          </div>
+          <GameControls 
+            gameMode={gameMode}
+            difficulty={difficulty}
+            onGameModeChange={(value) => setGameMode(value)}
+            onDifficultyChange={(value) => setDifficulty(value)}
+            matchedPairs={matchedPairs}
+            totalPairs={totalPairs}
+          />
           
-          <div className={getGridClasses()}>
-            {cards.map((card) => (
-              <motion.div
-                key={card.id}
-                initial={{ rotateY: 0 }}
-                animate={{ rotateY: card.flipped ? 180 : 0 }}
-                transition={{ duration: 0.5 }}
-                whileHover={{ scale: card.matched ? 1 : 1.05 }}
-                onClick={() => handleCardClick(card.id)}
-              >
-                <Card className={`
-                  h-28 flex items-center justify-center cursor-pointer p-3 text-center
-                  ${card.matched ? 'bg-green-100 border-green-300' : ''}
-                  ${card.flipped ? 'bg-yellow-50' : 'bg-white'}
-                `}>
-                  {card.flipped || card.matched ? (
-                    <div className="flex items-center justify-center h-full w-full">
-                      {card.type === "image" ? (
-                        <span className="text-4xl">{card.content}</span>
-                      ) : (
-                        <p className={`${card.type === "definition" ? "text-xs" : "text-xl font-bold"}`}>
-                          {card.content}
-                        </p>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="bg-yellow-500 w-full h-full rounded-md flex items-center justify-center">
-                      <span className="text-white font-bold text-xl">?</span>
-                    </div>
-                  )}
-                </Card>
-              </motion.div>
-            ))}
-          </div>
+          <GameBoard 
+            cards={cards}
+            handleCardClick={handleCardClick}
+            gridCols={gridCols}
+          />
           
           {gameCompleted && (
             <div className="mt-6 bg-green-100 p-4 rounded-lg text-center">
