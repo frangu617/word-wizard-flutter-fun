@@ -23,11 +23,11 @@ import ReadAndColor from './pages/ReadAndColor';
 import ReadingTest from './pages/ReadingTest';
 import NotFound from './pages/NotFound';
 import { Toaster } from './components/ui/toaster';
-import { TooltipProvider } from './components/ui/tooltip';
+import { TooltipProvider } from '@radix-ui/react-tooltip';
 
 function App() {
   return (
-    <TooltipProvider>
+    <TooltipProvider delayDuration={0}>
       <Router>
         <Routes>
           <Route path="/" element={<Index />} />

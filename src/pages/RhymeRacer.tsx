@@ -200,7 +200,7 @@ const RhymeRacer = () => {
       const updated = prev.map(word => {
         if (word.clicked) return word;
         
-        // Move the word
+        // Move the word - fix position calculation
         const newPosition = word.position + word.speed;
         
         // Return updated word
@@ -210,8 +210,8 @@ const RhymeRacer = () => {
         };
       });
       
-      // Remove words that have gone off the track
-      return updated.filter(word => word.position * (trackWidth / 100) <= trackWidth);
+      // Remove words that have gone off the track - proper calculation
+      return updated.filter(word => word.position <= trackWidth);
     });
   };
   
@@ -371,7 +371,7 @@ const RhymeRacer = () => {
                       className={`absolute cursor-pointer ${word.clicked ? 'opacity-50' : ''}`}
                       style={{
                         top: `${(word.lane * 20) + 5}%`,
-                        left: `${word.position}%`,
+                        left: `${Math.min(word.position, 90)}%`, // Cap at 90% to keep visible
                       }}
                       initial={{ x: -100 }}
                       animate={{ x: 0 }}
