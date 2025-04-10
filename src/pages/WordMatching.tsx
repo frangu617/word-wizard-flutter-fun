@@ -5,9 +5,10 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, RefreshCcw } from 'lucide-react';
 import Confetti from 'react-confetti';
 import audioService from '@/services/audioService';
-import { getRandomWords, getSightWords } from '@/services/wordService';
+import { getRandomWords } from '@/services/wordService';
 import GameBoard from '@/components/WordMatching/GameBoard';
 import GameControls from '@/components/WordMatching/GameControls';
+import { sightWordsByGrade } from '@/services/sightWordsByGrade';
 import { MatchingCard } from '@/components/WordMatching/MatchingCard';
 
 // Define grid sizes based on difficulty
@@ -16,6 +17,13 @@ const gridSizes = {
   medium: { pairs: 8, cols: 4 },
   hard: { pairs: 12, cols: 4 }
 };
+
+const difficultyToGrade: Record<"easy" | "medium" | "hard", keyof typeof sightWordsByGrade> = {
+  easy: "kindergarten",
+  medium: "first",
+  hard: "second"
+};
+
 
 const WordMatching = () => {
   const [cards, setCards] = useState<MatchingCard[]>([]);
@@ -44,7 +52,7 @@ const WordMatching = () => {
     
     // Use getRandomWords with the appropriate difficulty level
     // This will include ALL sight words, not just custom ones
-    const words = getRandomWords(currentGridSize.pairs, difficulty);
+    const words = getRandomWords(currentGridSize.pairs, difficultyToGrade[difficulty]);
     
     // Log the words for debugging
     console.log("Creating new cards with words:", words);
