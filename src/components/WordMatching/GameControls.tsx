@@ -3,9 +3,9 @@ import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface GameControlsProps {
-  gameMode: "word-word" | "word-definition" | "word-image";
+  gameMode: "word-word";
   difficulty: "easy" | "medium" | "hard";
-  onGameModeChange: (value: "word-word" | "word-definition" | "word-image") => void;
+  // onGameModeChange: (value: "word-word" | "word-definition" | "word-image") => void;
   onDifficultyChange: (value: "easy" | "medium" | "hard") => void;
   matchedPairs: number;
   totalPairs: number;
@@ -14,7 +14,7 @@ interface GameControlsProps {
 const GameControls: React.FC<GameControlsProps> = ({
   gameMode,
   difficulty,
-  onGameModeChange,
+  // onGameModeChange,
   onDifficultyChange,
   matchedPairs,
   totalPairs
@@ -23,24 +23,7 @@ const GameControls: React.FC<GameControlsProps> = ({
     <div className="flex flex-wrap justify-between items-center mb-6">
       <div className="mb-4 sm:mb-0">
         <p className="text-lg font-semibold mb-1">Game Settings:</p>
-        <div className="flex flex-wrap gap-3">
-          <div>
-            <p className="text-sm mb-1">Mode:</p>
-            <Select
-              value={gameMode}
-              onValueChange={(value) => onGameModeChange(value as "word-word" | "word-definition" | "word-image")}
-            >
-              <SelectTrigger className="w-36">
-                <SelectValue placeholder="Game Mode" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="word-word">Word - Word</SelectItem>
-                <SelectItem value="word-definition">Word - Definition</SelectItem>
-                <SelectItem value="word-image">Word - Image</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
+        <div className="flex flex-wrap gap-3">          
           <div>
             <p className="text-sm mb-1">Difficulty:</p>
             <Select

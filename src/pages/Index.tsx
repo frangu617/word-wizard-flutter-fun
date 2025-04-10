@@ -144,13 +144,6 @@ const Index = () => {
               Word Shooter
             </KidNavButton>
             
-            <KidNavButton
-              to="/syllables"
-              color="kid-teal"
-              icon={<BookOpen />}
-            >
-              Syllables
-            </KidNavButton>
           </div>
         </TabsContent>
         
@@ -158,7 +151,7 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
             <KidNavButton
               to="/sight-word-bingo"
-              color="kid-pink"
+              color="kid-red"
               icon={<Grid3X3 />}
             >
               Sight Word Bingo
@@ -166,7 +159,7 @@ const Index = () => {
             
             <KidNavButton
               to="/word-matching"
-              color="kid-yellow"
+              color="kid-blue"
               icon={<Puzzle />}
             >
               Word Matching
@@ -174,7 +167,7 @@ const Index = () => {
             
             <KidNavButton
               to="/sentence-builder"
-              color="kid-indigo"
+              color="kid-green"
               icon={<AlignJustify />}
             >
               Sentence Builder
@@ -182,7 +175,7 @@ const Index = () => {
             
             <KidNavButton
               to="/word-ladder"
-              color="kid-red"
+              color="kid-purple"
               icon={<ArrowUpDown />}
             >
               Word Ladder
@@ -190,7 +183,7 @@ const Index = () => {
             
             <KidNavButton
               to="/letter-sound-pop"
-              color="kid-blue"
+              color="kid-orange"
               icon={<Music />}
             >
               Letter Sound Pop
@@ -198,7 +191,7 @@ const Index = () => {
             
             <KidNavButton
               to="/missing-letter"
-              color="kid-green"
+              color="kid-red"
               icon={<Feather />}
             >
               Missing Letter
@@ -206,7 +199,7 @@ const Index = () => {
             
             <KidNavButton
               to="/rhyme-racer"
-              color="kid-purple"
+              color="kid-blue"
               icon={<Car />}
             >
               Rhyme Racer
@@ -214,23 +207,15 @@ const Index = () => {
             
             <KidNavButton
               to="/word-maze"
-              color="kid-orange"
+              color="kid-green"
               icon={<Footprints />}
             >
               Word Maze
             </KidNavButton>
             
             <KidNavButton
-              to="/read-and-color"
-              color="kid-teal"
-              icon={<Palette />}
-            >
-              Read and Color
-            </KidNavButton>
-            
-            <KidNavButton
               to="/story-builder"
-              color="kid-pink"
+              color="kid-purple"
               icon={<Feather />}
             >
               Story Builder

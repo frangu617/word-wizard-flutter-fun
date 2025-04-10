@@ -32,7 +32,7 @@ const WordMatching = () => {
   const [totalPairs, setTotalPairs] = useState<number>(6);
   const [isChecking, setIsChecking] = useState<boolean>(false);
   const [gameCompleted, setGameCompleted] = useState<boolean>(false);
-  const [gameMode, setGameMode] = useState<"word-word" | "word-definition" | "word-image">("word-word");
+  const [gameMode, setGameMode] = useState<"word-word">("word-word");
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("easy");
   const [showConfetti, setShowConfetti] = useState<boolean>(false);
   const [gridCols, setGridCols] = useState<number>(3);
@@ -86,66 +86,7 @@ const WordMatching = () => {
           matchId: index
         });
       });
-    } else if (gameMode === "word-definition") {
-      // Create pairs of words and simple definitions
-      const definitions = [
-        "a furry pet that meows", "a pet that barks", "a yellow fruit", 
-        "used to tell time", "the color of the sky", "a red fruit",
-        "a big gray animal", "a sweet frozen treat", "falls from the sky",
-        "you sleep in it", "you sit on it", "you eat with it",
-        "worn on your feet", "covers your head", "used to write with",
-        "you read this", "grows in gardens", "flies in the sky",
-        "swims in water", "crawls on ground", "gives light"
-      ];
-      
-      words.forEach((word, index) => {
-        // Word card
-        newCards.push({
-          id: index * 2,
-          content: word,
-          type: "word",
-          matched: false,
-          flipped: false,
-          matchId: index
-        });
-        
-        // Definition card
-        newCards.push({
-          id: index * 2 + 1,
-          content: definitions[index % definitions.length],
-          type: "definition",
-          matched: false,
-          flipped: false,
-          matchId: index
-        });
-      });
-    } else if (gameMode === "word-image") {
-      // Create pairs of words and emojis (simple visual representation)
-      const emojis = ["🐱", "🐶", "🍌", "⏰", "🌈", "🍎", "🐘", "🍦", "☔", "🛏️", "🪑", "🍴", 
-                      "👟", "🧢", "✏️", "📚", "🌷", "🦅", "🐟", "🐛", "💡"];
-      
-      words.forEach((word, index) => {
-        // Word card
-        newCards.push({
-          id: index * 2,
-          content: word,
-          type: "word",
-          matched: false,
-          flipped: false,
-          matchId: index
-        });
-        
-        // Image/emoji card
-        newCards.push({
-          id: index * 2 + 1,
-          content: emojis[index % emojis.length],
-          type: "image",
-          matched: false,
-          flipped: false,
-          matchId: index
-        });
-      });
-    }
+    } 
     
     // Shuffle the cards
     newCards = shuffleArray(newCards);
@@ -284,7 +225,7 @@ const WordMatching = () => {
           <GameControls 
             gameMode={gameMode}
             difficulty={difficulty}
-            onGameModeChange={(value) => setGameMode(value)}
+            // onGameModeChange={(value) => setGameMode(value)}
             onDifficultyChange={(value) => setDifficulty(value)}
             matchedPairs={matchedPairs}
             totalPairs={totalPairs}
@@ -319,8 +260,6 @@ const WordMatching = () => {
             <li>Choose different modes for more challenge:</li>
             <ul className="list-circle pl-5 space-y-1 mt-1">
               <li><span className="font-semibold">Word-Word:</span> Match identical words</li>
-              <li><span className="font-semibold">Word-Definition:</span> Match words with their definitions</li>
-              <li><span className="font-semibold">Word-Image:</span> Match words with related images</li>
             </ul>
             <li>Difficulty levels change both word complexity and grid size</li>
           </ul>
