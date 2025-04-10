@@ -151,7 +151,7 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
             <KidNavButton
               to="/sight-word-bingo"
-              color="kid-red"
+              color="kid-purple"
               icon={<Grid3X3 />}
             >
               Sight Word Bingo
@@ -159,7 +159,7 @@ const Index = () => {
             
             <KidNavButton
               to="/word-matching"
-              color="kid-blue"
+              color="kid-yellow"
               icon={<Puzzle />}
             >
               Word Matching
@@ -167,7 +167,7 @@ const Index = () => {
             
             <KidNavButton
               to="/sentence-builder"
-              color="kid-green"
+              color="kid-blue"
               icon={<AlignJustify />}
             >
               Sentence Builder
@@ -175,7 +175,7 @@ const Index = () => {
             
             <KidNavButton
               to="/word-ladder"
-              color="kid-purple"
+              color="kid-red"
               icon={<ArrowUpDown />}
             >
               Word Ladder
@@ -183,7 +183,7 @@ const Index = () => {
             
             <KidNavButton
               to="/letter-sound-pop"
-              color="kid-orange"
+              color="kid-blue"
               icon={<Music />}
             >
               Letter Sound Pop
@@ -191,7 +191,7 @@ const Index = () => {
             
             <KidNavButton
               to="/missing-letter"
-              color="kid-red"
+              color="kid-green"
               icon={<Feather />}
             >
               Missing Letter
@@ -199,7 +199,7 @@ const Index = () => {
             
             <KidNavButton
               to="/rhyme-racer"
-              color="kid-blue"
+              color="kid-purple"
               icon={<Car />}
             >
               Rhyme Racer
@@ -207,7 +207,7 @@ const Index = () => {
             
             <KidNavButton
               to="/word-maze"
-              color="kid-green"
+              color="kid-orange"
               icon={<Footprints />}
             >
               Word Maze
@@ -215,7 +215,7 @@ const Index = () => {
             
             <KidNavButton
               to="/story-builder"
-              color="kid-purple"
+              color="kid-pink"
               icon={<Feather />}
             >
               Story Builder
